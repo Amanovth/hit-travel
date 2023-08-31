@@ -10,7 +10,7 @@ SECRET_KEY = 'django-insecure-=0(xqa1p9=4!+m@im(+m*t*c6fz4%prw^f05m8_09^rxrwb0mp
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'debug_toolbar',
+    'corsheaders',
 
     'src.account',
     'src.tours',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -146,3 +148,15 @@ DEBUG_TOOLBAR_CONFIG = {
 
 AUTHLOGIN = os.getenv('AUTHLOGIN')
 AUTHPASS = os.getenv('AUTHPASS')
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+]
+
+CORS_ALLOW_METHODS = (
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
