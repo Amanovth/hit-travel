@@ -10,7 +10,7 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'phone', 'first_name', 'last_name', 'password', 'confirm_password']
+        fields = ['email', 'first_name', 'last_name', 'password', 'confirm_password']
 
     def save(self, *args, **kwargs):
         first_name = self.validated_data['first_name']
@@ -18,13 +18,11 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
         email = self.validated_data['email']
         password = self.validated_data['password']
         confirm_password = self.validated_data['confirm_password']
-        phone = self.validated_data['phone']
 
         user = User(
             email=email,
             first_name=first_name,
             last_name=last_name,
-            phone=phone
         )
 
         if password != confirm_password:

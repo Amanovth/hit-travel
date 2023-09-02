@@ -6,43 +6,94 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
 
+
 class SearchView(APIView):
     authlogin = settings.AUTHLOGIN
     authpass = settings.AUTHPASS
 
     def get_search_result(self, query_params):
-        search_url = (f'http://tourvisor.ru/xml/search.php?format=json'
-                      f'&authlogin={self.authlogin}&authpass={self.authpass}')
+        search_url = (
+            f"http://tourvisor.ru/xml/search.php?format=json"
+            f"&authlogin={self.authlogin}&authpass={self.authpass}"
+        )
 
         for param, value in query_params.items():
-            search_url += f'&{param}={value}'
+            search_url += f"&{param}={value}"
 
         requestid = requests.get(search_url)
         requestid.raise_for_status()
 
-        return requestid.json()['result']['requestid']
+        return requestid.json()["result"]["requestid"]
 
     def get(self, request):
-
         requestid = self.get_search_result(request.query_params)
 
         time.sleep(5)
-        url = (f'http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}'
-               f'&authlogin={self.authlogin}&authpass={self.authpass}&onpage=5')
+        url = (
+            f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
+            f"&authlogin={self.authlogin}&authpass={self.authpass}&onpage=5"
+        )
 
         response = requests.get(url)
         response.raise_for_status()
 
-        state = response.json()['data']['status']['state']
-        
+        state = response.json()["data"]["status"]["state"]
+
         return Response(response.json())
 
-        # if state == 'finished':
-        #     return Response(response.json())
-        # elif state == 'searching':
-        #     time.sleep(0.2)
-        #     return Response(response.json())
-        # return Response('Time Out')
+
+class FilterParams(APIView):
+    def get(self, request):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        options = requests.get(
+            f"http://tourvisor.ru/xml/listdev.php?type="
+            f"country,departure,region,subregion,meal,stars,operator,currency,services"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}"
+        )
+        options.raise_for_status()
+        return Response(options.json())
+
+
+class TourActualizeView(APIView):
+    def get(self, request, tourid):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        actualize = requests.get(
+            f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}"
+        )
+        actualize.raise_for_status()
+        return Response(actualize.json())
+
+
+class TourActdetailView(APIView):
+    def get(self, request, tourid):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        actualize = requests.get(
+            f"http://tourvisor.ru/xml/actdetail.php?tourid={tourid}"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}"
+        )
+        actualize.raise_for_status()
+        return Response(actualize.json())
+
+
+class HotelDetailView(APIView):
+    def get(self, request, hotelcode):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        hoteldetail = requests.get(
+            f"http://tourvisor.ru/xml/hotel.php?hotelcode={hotelcode}"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
+        )
+
+        hoteldetail.raise_for_status()
+        return Response(hoteldetail.json())
 
 
 # class SearchView(APIView):
@@ -87,58 +138,3 @@ class SearchView(APIView):
 #             return Response(response_data)
 #         else:
 #             return Response("Time Out")
-
-
-class FilterParams(APIView):
-    def get(self, request):
-        authlogin = settings.AUTHLOGIN
-        authpass = settings.AUTHPASS
-
-        options = requests.get(
-            f"http://tourvisor.ru/xml/list.php?type="
-            f"country,departure,region,subregion,meal,stars,operator,currency,services"
-            f"&format=json&authpass={authpass}&authlogin={authlogin}"
-        )
-        options.raise_for_status()
-        return Response(options.json())
-
-
-class TourActualizeView(APIView):
-    def get(self, request, tourid):
-        authlogin = settings.AUTHLOGIN
-        authpass = settings.AUTHPASS 
-        
-        actualize = requests.get(
-            f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
-            f"&format=json&authpass={authpass}&authlogin={authlogin}"
-        )
-        actualize.raise_for_status()
-        return Response(actualize.json())
-    
-
-class TourActdetailView(APIView):
-    def get(self, request, tourid):
-        authlogin = settings.AUTHLOGIN
-        authpass = settings.AUTHPASS 
-        
-        actualize = requests.get(
-            f"http://tourvisor.ru/xml/actdetail.php?tourid={tourid}"
-            f"&format=json&authpass={authpass}&authlogin={authlogin}"
-        )
-        actualize.raise_for_status()
-        return Response(actualize.json())
-    
-    
-class HotelDetailView(APIView):
-    def get(self, request, hotelcode):
-        authlogin = settings.AUTHLOGIN
-        authpass = settings.AUTHPASS
-        
-        hoteldetail = requests.get(
-            f"http://tourvisor.ru/xml/hotel.php?hotelcode={hotelcode}"
-            f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
-        )
-        
-        hoteldetail.raise_for_status()
-        return Response(hoteldetail.json())
-    
