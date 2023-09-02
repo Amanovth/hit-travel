@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 
-from .models import User, Favorites, Tour
+from .models import User
 
 
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'password', 'confirm_password']
+        fields = ['email', 'phone', 'first_name', 'last_name', 'password', 'confirm_password']
 
     def save(self, *args, **kwargs):
         first_name = self.validated_data['first_name']
@@ -18,11 +18,13 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
         email = self.validated_data['email']
         password = self.validated_data['password']
         confirm_password = self.validated_data['confirm_password']
+        phone = self.validated_data['phone']
 
         user = User(
             email=email,
             first_name=first_name,
-            last_name=last_name
+            last_name=last_name,
+            phone=phone
         )
 
         if password != confirm_password:
@@ -152,17 +154,3 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
     def get_last_login(self, obj):
         if obj.last_login:
             return obj.last_login.strftime("%Y/%m/%d %H:%M")
-
-
-class TourSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tour
-        fields = '__all__'
-
-
-class FavoriteToursSerializer(serializers.ModelSerializer):
-    tour = TourSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Favorites
-        fields = ['tour']

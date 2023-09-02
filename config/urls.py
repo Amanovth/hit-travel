@@ -7,8 +7,7 @@ from .yasg import doc_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('src.account.urls')),
-    path('', include('src.tours.urls')),
-    path('', include('src.search.urls')),
+    path('api/', include('src.search.urls')),
     path("__debug__/", include("debug_toolbar.urls")),
 ]
 

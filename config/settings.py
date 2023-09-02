@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'src.account',
-    'src.tours',
     'src.search'
 ]
 
@@ -150,7 +149,8 @@ AUTHLOGIN = os.getenv('AUTHLOGIN')
 AUTHPASS = os.getenv('AUTHPASS')
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8080',
+    'http://localhost:3000',
+    'http://localhost:3001',
 ]
 
 CORS_ALLOW_METHODS = (

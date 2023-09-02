@@ -14,7 +14,6 @@ from django.conf import settings
 
 from ..base.utils import Util
 from .serializers import *
-from src.tours.models import Tour
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -171,7 +170,7 @@ class PasswordResetRequestAPIView(views.APIView):
                     user.password_reset_token = token
                     user.save()
 
-                    reset_url = f"http://localhost:8000/auth/password-reset/{token}"
+                    reset_url = f"http://77.232.128.174:8000/auth/password-reset/{token}"
 
                     email_body = f"To reset you password use link below:\n\n" \
                                  f"{reset_url}"
@@ -307,29 +306,3 @@ class ProfileInfoAPIView(views.APIView):
             'response': True,
             'profile': serializer.data
         })
-
-
-class AddRemoveFavoriteView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, tour_id):
-        user = request.user
-        try:
-            tour = Tour.objects.get(pk=tour_id)
-        except ObjectDoesNotExist:
-            return Response({"response": False, "detail": "Tour not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        favorite, created = Favorites.objects.get_or_create(user=user, tour=tour)
-
-        if not created:
-            favorite.delete()
-            return Response({"response": True, "detail": "Removed from favorites"}, status=status.HTTP_200_OK)
-
-        return Response({"response": True, "detail": "Added to favorites"}, status=status.HTTP_200_OK)
-
-
-class FavoriteToursAPIView(generics.ListAPIView):
-    serializer_class = FavoriteToursSerializer
-
-    def get_queryset(self):
-        return Favorites.objects.filter(user=self.request.user).select_related('tour')

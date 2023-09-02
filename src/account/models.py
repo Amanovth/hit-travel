@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
-from src.tours.models import Tour
 from ..base.services import get_path_upload_photo, validate_size_image
 
 
@@ -64,14 +63,7 @@ class User(AbstractUser):
         db_table = 'user'
         verbose_name = _('User')
         verbose_name_plural = _('Users')
-
+        
     def __str__(self):
         return self.email
-
-
-class Favorites(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='user')
-    tour = models.ForeignKey(Tour, on_delete=models.CASCADE, null=True, blank=True, related_name='tour')
-
-    def __str__(self):
-        return self.user
+    

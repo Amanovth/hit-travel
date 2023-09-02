@@ -13,7 +13,5 @@ urlpatterns = [
     path('auth/new-password', SetNewPasswordAPIView.as_view(), name='set-new-password'),
     path('profile/update-photo', UpdateProfilePhotoAPIView.as_view(), name='Update profile photo'),
     path('profile/remove-photo', RemoveProfilePhotoAPIView.as_view(), name='Remove profile photo'),
-    path('favorite/<int:tour_id>', AddRemoveFavoriteView.as_view(), name='add-remove-favorite'),
     path('profile/personal', ProfileInfoAPIView.as_view(), name='Profile information'),
-    path('profile/favorites', FavoriteToursAPIView.as_view(), name='Favorite Tours')
 ]
