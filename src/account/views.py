@@ -9,6 +9,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
 
@@ -24,73 +25,109 @@ class RegisterAPIView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
-            email = serializer.validated_data['email']
+            email = serializer.data["email"]
+            first_name = serializer.data["first_name"]
+            last_name = serializer.data["last_name"]
+            password = serializer.data["password"]
+            confirm_password = serializer.data["confirm_password"]
 
             if User.objects.filter(email=email).exists():
-                return Response({'response': False, 'message': 'Пользователь с таким email уже существует.'})
+                return Response(
+                    {
+                        "response": False,
+                        "message": "Пользователь с таким email уже существует.",
+                    }
+                )
 
-            serializer.save()
+            if password != confirm_password:
+                return Response(
+                    {"response": False, "password": _("Пароли не совпадают.")}
+                )
 
-            email = serializer.data['email']
-            user = User.objects.get(email=email)
+            user = User(email=email, first_name=first_name, last_name=last_name)
+            user.set_password(password)
+            user.save()
+
             user.verification_code_time = datetime.now()
             user.verification_code = randint(100_000, 999_999)
             user.save()
 
-            email_body = f"Hello! {user.last_name} {user.first_name}\n\n" \
-                         f"To confirm registration in the system, enter the code below:\n\n" \
-                         f"{user.verification_code}"
+            email_body = (
+                f"Hello! {user.last_name} {user.first_name}\n\n"
+                f"To confirm registration in the system, enter the code below:\n\n"
+                f"{user.verification_code}"
+            )
 
             email_data = {
-                'email_body': email_body,
-                'email_subject': 'Confirm your registration',
-                'to_email': user.email
+                "email_body": email_body,
+                "email_subject": "Confirm your registration",
+                "to_email": user.email,
             }
 
             Util.send_email(email_data)
 
-            return Response({'response': True}, status=status.HTTP_201_CREATED)
-        return Response({'response': False, 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"response": True}, status=status.HTTP_201_CREATED)
+        return Response({"response": False})
 
 
 class VerifyEmailAPIView(generics.GenericAPIView):
     serializer_class = VerifyEmailSerializer
-    try:
-        def post(self, request):
-            serializer = self.serializer_class(data=request.data)
 
-            if serializer.is_valid():
-                code = serializer.data['code']
-                email = serializer.data['email']
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
 
-                try:
-                    user = User.objects.get(email=email)
+        if serializer.is_valid():
+            code = serializer.data["code"]
+            email = serializer.data["email"]
 
-                    if user.is_verified:
-                        return Response({'message': _('Account is already verified')})
+            try:
+                user = User.objects.get(email=email)
 
-                    if user.verification_code_time:
-                        expiration_time = user.verification_code_time + timedelta(minutes=30)
-                        expiration_time = expiration_time.replace(tzinfo=timezone.utc)
-                        if datetime.now(timezone.utc) >= expiration_time:
-                            user.verification_code = None
-                            user.verification_code_time = None
-                            user.save()
-                            return Response({'error': _('Code expired!'), }, status=status.HTTP_400_BAD_REQUEST)
-                        if user.verification_code == code:
-                            user.is_verified = True
-                            user.save()
-                            return Response({'response': True, 'message': _('Activation was successful!')})
-                        return Response({'response': False, 'message': _('Wrong code entered')},
-                                        status=status.HTTP_400_BAD_REQUEST)
-                    return Response({'response': False, 'message': _('Code expired')},
-                                    status=status.HTTP_400_BAD_REQUEST)
-                except ObjectDoesNotExist:
-                    return Response({'response': False, 'message': _('User with this email does not exist')},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            return Response({'response': False, 'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as error:
-        print(error)
+                if user.is_verified:
+                    return Response({"message": _("Аккаунт уже подтвержден")})
+
+                if user.verification_code_time:
+                    expiration_time = user.verification_code_time + timedelta(
+                        minutes=30
+                    )
+                    expiration_time = expiration_time.replace(tzinfo=timezone.utc)
+
+                    if datetime.now(timezone.utc) >= expiration_time:
+                        user.verification_code = None
+                        user.verification_code_time = None
+                        user.save()
+                        return Response(
+                            {
+                                "reponse": False,
+                                "message": _("Срок действия кода истек!"),
+                            }
+                        )
+                    if user.verification_code == code:
+                        user.is_verified = True
+                        user.save()
+                        return Response(
+                            {
+                                "response": True,
+                                "message": _("Верификация прошла успешно!"),
+                            }
+                        )
+                    return Response(
+                        {"response": False, "message": _("Введен неверный код")}
+                    )
+                return Response(
+                    {"response": False, "message": _("Срок действия кода истек!")}
+                )
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "response": False,
+                        "message": _("Пользователь с таким email не существует"),
+                    }
+                )
+        return Response(
+            {"response": False, "detail": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class SendAgainCodeAPIView(generics.GenericAPIView):
@@ -100,65 +137,86 @@ class SendAgainCodeAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
-            email = serializer.data['email']
+            email = serializer.data["email"]
 
             try:
                 user = User.objects.get(email=email)
             except ObjectDoesNotExist:
-                return Response({'message': _('User with this email does not exist')},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            if user.is_verified:
-                return Response({'message': _('User is already verified')}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "reponse": False,
+                        "message": _("Пользователь с таким email не существует"),
+                    },
+                )
 
             user.verification_code = randint(100_000, 999_999)
             user.verification_code_time = datetime.now()
             user.save()
 
-            email_body = f"Your new activation code:\n\n" \
-                         f"{user.verification_code}"
+            email_body = f"Ваш новый код активации:\n\n" f"{user.verification_code}"
 
             email_data = {
-                'email_body': email_body,
-                'email_subject': 'Confirm your registration',
-                'to_email': user.email
+                "email_body": email_body,
+                "email_subject": "Подтвердите регистрацию",
+                "to_email": user.email,
             }
 
             Util.send_email(email_data)
-            return Response({'response': True, 'message': _('Verification code sent successfully')},
-                            status=status.HTTP_200_OK)
-        return Response({'response': False, 'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"response": True, "message": _("Код подтверждения успешно отправлен")}
+            )
+        return Response(
+            {"response": False, "detail": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class LoginAPIView(ObtainAuthToken):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        try:
+            user = serializer.validated_data["user"]
+        except KeyError:
+            return Response(
+                {
+                    "resonse": False,
+                    "message": "Невозможно войти в систему с указанными учетными данными",
+                }
+            )
         if user.is_verified:
             token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'response': True,
-                'token': token.key,
-                'email': user.username,
-            })
-        return Response({'message': _('You are not verified')})
+            return Response(
+                {
+                    "response": True,
+                    "token": token.key,
+                    "email": user.email,
+                }
+            )
+        return Response({"response": False, "message": _("Вы не верифицированы")})
 
 
 class LogoutAPIView(views.APIView):
     def get(self, request):
         user = request.user
-        print(user)
         if user.is_authenticated:
             try:
                 token = Token.objects.get(user=user)
                 token.delete()
-                return Response({'response': True, 'message': _('Logout successful')}, status=status.HTTP_200_OK)
+                return Response(
+                    {"response": True, "message": _("Выход выполнен успешно")}
+                )
             except ObjectDoesNotExist:
-                return Response({'message': _('User not logged in')}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'message': _('User not authenticated')}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"reponse": False, "message": _("Пользователь не авторизован")}
+                )
+        return Response(
+            {"response": False, "message": _("Пользователь не авторизован")}
+        )
 
 
 class PasswordResetRequestAPIView(views.APIView):
@@ -167,36 +225,46 @@ class PasswordResetRequestAPIView(views.APIView):
     def post(self, request):
         serializer = self.serializer_classe(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email']
+            email = serializer.validated_data["email"]
             try:
                 user = User.objects.get(email=email)
                 if user.is_verified:
-                    token = ''.join(choices(string.ascii_letters + string.digits, k=20))
+                    token = "".join(choices(string.ascii_letters + string.digits, k=20))
                     user.password_reset_token = token
                     user.save()
 
-                    reset_url = f"http://77.232.128.174:8000/auth/password-reset/{token}"
+                    reset_url = (
+                        f"http://77.232.128.174:8000/auth/password-reset/{token}"
+                    )
 
-                    email_body = f"To reset you password use link below:\n\n" \
-                                 f"{reset_url}"
+                    email_body = (
+                        f"Для сброса пароля используйте ссылку ниже:\n\n" f"{reset_url}"
+                    )
 
                     email_data = {
-                        'email_body': email_body,
-                        'email_subject': 'Reset your password',
-                        'to_email': user.email
+                        "email_body": email_body,
+                        "email_subject": "Сбросить пароль",
+                        "to_email": user.email,
                     }
 
                     Util.send_email(email_data)
 
-                    return Response({'response': True, 'message': _('Password reset link sent successfully')},
-                                    status.HTTP_200_OK)
-                return Response({'resonse': True, 'message': _('You are not verified')},
-                                status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {
+                            "response": True,
+                            "message": _("Ссылка для сброса пароля успешно отправлена"),
+                        }
+                    )
+                return Response({"resonse": True, "message": _("Вы не верифицированы")})
 
             except ObjectDoesNotExist:
-                return Response({'message': _('User with this email does not exist')},
-                                status=status.HTTP_400_BAD_REQUEST)
-        return Response({'response': False, 'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"message": _("Пользователь с таким адресом email не существует")},
+                )
+        return Response(
+            {"response": False, "detail": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class PasswordResetUpdateAPIView(views.APIView):
@@ -206,44 +274,34 @@ class PasswordResetUpdateAPIView(views.APIView):
         try:
             user = User.objects.get(password_reset_token=token)
             if user.password_reset_token == token:
-                new_password = ''.join(choices(string.ascii_letters + string.digits, k=8))
+                new_password = "".join(
+                    choices(string.ascii_letters + string.digits, k=8)
+                )
                 user.set_password(new_password)
                 user.password_reset_token = None
                 user.save()
 
-                email_body = f"Your new password:\n\n" \
-                             f"{new_password}"
+                email_body = f"Ваш новый пароль:\n\n" f"{new_password}"
 
                 email_data = {
-                    'email_body': email_body,
-                    'email_subject': 'Use your new password',
-                    'to_email': user.email
+                    "email_body": email_body,
+                    "email_subject": "Используйте новый пароль",
+                    "to_email": user.email,
                 }
 
                 Util.send_email(email_data)
 
-                return Response({'response': True, 'message': _('New password was send to your email')},
-                                status.HTTP_200_OK)
+                return Response(
+                    {
+                        "response": True,
+                        "message": _(
+                            "Новый пароль был отправлен на вашу электронную почту"
+                        ),
+                    }
+                )
 
         except ObjectDoesNotExist:
-            return Response({'respons': False, 'message': _('Invalid token')}, status=status.HTTP_400_BAD_REQUEST)
-
-    # def update(self, request, token):
-    #     serializer = self.serializer_class(data=request.data)
-    #     if serializer.is_valid():
-    #         password = serializer.validated_data['password']
-    #         try:
-    #             user = User.objects.get(password_reset_token=token)
-    #             if user.password_reset_token == token:
-    #                 user.set_password(password)
-    #                 user.password_reset_token = None
-    #                 user.save()
-    #                 return Response({'response': True, 'message': _('Password reset successfully')},
-    #                                 status=status.HTTP_200_OK)
-    #             return Response('error', status=status.HTTP_400_BAD_REQUEST)
-    #         except ObjectDoesNotExist:
-    #             return Response({'message': _('Invalid or expired token')}, status=status.HTTP_400_BAD_REQUEST)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"respons": False, "message": _("Неверный токен")})
 
 
 class SetNewPasswordAPIView(generics.UpdateAPIView):
@@ -252,23 +310,29 @@ class SetNewPasswordAPIView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            old_password = serializer.validated_data['old_password']
-            new_password = serializer.validated_data['new_password']
-            try:
-                user = request.user
-                if user.is_verified:
-                    if check_password(old_password, user.password):
-                        user.set_password(new_password)
-                        user.password_reset_token = None
-                        user.save()
-                        return Response({'response': True}, status=status.HTTP_200_OK)
-                    return Response({'message': _('Old password is incorrect!')}, status=status.HTTP_400_BAD_REQUEST)
-                return Response({'message': _('You are not verified!')})
+            old_password = serializer.validated_data["old_password"]
+            new_password = serializer.validated_data["new_password"]
 
-            except ObjectDoesNotExist:
-                return Response({'message': _('User with this email does not exist')},
-                                status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            user = get_object_or_404(User, pk=request.user.pk)
+
+            if not user.is_verfied or not user.is_authenticated:
+                return Response(
+                    {"reponse": False, "message": "Вы неавторизованы"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            if not check_password(old_password, user.password):
+                return Response(
+                    {"response": False, "message": _("Старый пароль неверен!")}
+                )
+
+            user.set_password(new_password)
+            user.save()
+            return Response({"response": True, "message": _("Пароль успешно обновлен")})
+        return Response(
+            {"response": False, "detail": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class UpdateProfilePhotoAPIView(generics.UpdateAPIView):
@@ -287,14 +351,23 @@ class RemoveProfilePhotoAPIView(views.APIView):
         user = request.user
 
         if user.photo:
-            image_path = os.path.join(settings.MEDIA_ROOT, f'profile_photos/user_{user.pk}')
+            image_path = os.path.join(
+                settings.MEDIA_ROOT, f"profile_photos/user_{user.pk}"
+            )
             if os.path.exists(image_path):
                 shutil.rmtree(image_path)
 
-            user.photo = 'default_profile_photo.png'
+            user.photo = "default_profile_photo.png"
             user.save()
-            return Response({'response': True, 'detail': 'Profile photo removed'}, status=status.HTTP_200_OK)
-        return Response({'response': False, 'detail': 'No profile photo to remove'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"response": True, "message": "Фотография профиля удалена."}
+            )
+        return Response(
+            {
+                "response": False,
+                "messafe": "Нет фотографии профиля, которую можно удалить.",
+            }
+        )
 
 
 class ProfileInfoAPIView(views.APIView):
@@ -304,10 +377,10 @@ class ProfileInfoAPIView(views.APIView):
         try:
             user = request.user
         except ObjectDoesNotExist:
-            return Response({"response": False, "detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"response": False, "detail": "Пользователь не найден"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         serializer = PersonalInfoSerializer(user, context={"request": request})
-        return Response({
-            'response': True,
-            'profile': serializer.data
-        })
+        return Response({"response": True, "data": serializer.data})

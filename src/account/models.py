@@ -38,7 +38,7 @@ class User(AbstractUser):
     username = None
     balance = models.DecimalField(_('Balance'), default=0, max_digits=10, decimal_places=2)
     bonuses = models.DecimalField(_('Bonuses'), default=0, max_digits=10, decimal_places=2)
-    email = models.EmailField(_('Email'), unique=True)
+    email = models.EmailField(_('Email'))
     is_verified = models.BooleanField(_('Verification'), default=False)
     phone = models.CharField(verbose_name=_('Phone'), max_length=12, unique=True, null=True, blank=True)
     verification_code = models.IntegerField(_('Verification code'), null=True, blank=True)
@@ -51,10 +51,11 @@ class User(AbstractUser):
         validators=[validate_size_image],
     )
     date_birth = models.DateField(_('Date of birth'), null=True, blank=True)
-    passport_id = models.CharField(_('Passport ID'), max_length=8, null=True, blank=True)
+    passport_id = models.CharField(_('Passport ID'), max_length=8, null=True, blank=True, unique=True)
     county = models.CharField(_('Country'), max_length=100, null=True, blank=True)
+    tourist_id = models.IntegerField(_('ID Туриста'))
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'passport_id'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = UserManager()

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 
@@ -6,30 +7,11 @@ from .models import User
 
 
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(write_only=True, required=True, max_length=68, min_length=8)
+    confirm_password = serializers.CharField(required=True, max_length=68, min_length=8)
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'password', 'confirm_password']
-
-    def save(self, *args, **kwargs):
-        first_name = self.validated_data['first_name']
-        last_name = self.validated_data['last_name']
-        email = self.validated_data['email']
-        password = self.validated_data['password']
-        confirm_password = self.validated_data['confirm_password']
-
-        user = User(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-        )
-
-        if password != confirm_password:
-            raise serializers.ValidationError({'response': False, 'password': _("Пароли не совпадают.")})
-        user.set_password(password)
-        user.save()
-        return user
+        fields = ["email", "first_name", "last_name", "password", "confirm_password"]
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -37,49 +19,49 @@ class VerifyEmailSerializer(serializers.Serializer):
     code = serializers.IntegerField()
 
     class Meta:
-        fields = ['email', 'code']
+        fields = ["email", "code"]
 
 
 class SendAgainCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     class Meta:
-        fields = ['email']
+        fields = ["email"]
 
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        label=_("Email"),
-        style={'input_type': 'email'},
-        write_only=True
+        label=_("Email"), style={"input_type": "email"}, write_only=True
     )
     password = serializers.CharField(
         label=_("Password"),
-        style={'input_type': 'password'},
+        style={"input_type": "password"},
         trim_whitespace=False,
-        write_only=True
+        write_only=True,
     )
-    token = serializers.CharField(
-        label=_("Token"),
-        read_only=True
-    )
+    token = serializers.CharField(label=_("Token"), read_only=True)
 
     def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+        email = attrs.get("email")
+        password = attrs.get("password")
 
         if email and password:
-            user = authenticate(request=self.context.get('request'),
-                                username=email, password=password)
+            user = authenticate(
+                request=self.context.get("request"), username=email, password=password
+            )
 
             if not user:
-                msg = _('Unable to log in with provided credentials.')
-                raise serializers.ValidationError(msg, code='authorization')
+                return Response(
+                    {
+                        "response": False,
+                        "message": "Невозможно войти в систему с указанными учетными даннымиpDvT#uJwi4+LNU",
+                    }
+                )
         else:
-            msg = _('Must include "username" and "password".')
-            raise serializers.ValidationError(msg, code='authorization')
+            msg = _("Должен включать имя пользователя и пароль")
+            raise serializers.ValidationError(msg, code="authorization")
 
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs
 
 
@@ -87,7 +69,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     class Meta:
-        fields = ['email']
+        fields = ["email"]
 
 
 class PasswordResetUpdateSerializer(serializers.Serializer):
@@ -95,14 +77,14 @@ class PasswordResetUpdateSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
-        fields = ['password', 'confirm_password']
+        fields = ["password", "confirm_password"]
 
     def validate(self, attrs):
-        password = attrs.get('password')
-        confirm_password = attrs.get('confirm_password')
+        password = attrs.get("password")
+        confirm_password = attrs.get("confirm_password")
 
         if password != confirm_password:
-            raise serializers.ValidationError('Password do not much')
+            raise serializers.ValidationError("Пароли не совпадают")
         return attrs
 
 
@@ -112,21 +94,21 @@ class SetNewPasswordSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
-        fields = ['old_password', 'new_password', 'confirm_password']
+        fields = ["old_password", "new_password", "confirm_password"]
 
     def validate(self, attrs):
-        new_password = attrs.get('new_password')
-        confirm_password = attrs.get('confirm_password')
+        new_password = attrs.get("new_password")
+        confirm_password = attrs.get("confirm_password")
 
         if new_password != confirm_password:
-            raise serializers.ValidationError({'error': 'Password do not much'})
+            raise serializers.ValidationError({"error": "Пароли не совпадают"})
         return attrs
 
 
 class UpdateProfilePhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['photo']
+        fields = ["photo"]
 
 
 class PersonalInfoSerializer(serializers.ModelSerializer):
@@ -136,12 +118,21 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'date_joined', 'last_login', 'photo',
-                  'balance', 'bonuses']
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "date_joined",
+            "last_login",
+            "photo",
+            "balance",
+            "bonuses",
+        ]
 
     def get_photo(self, obj):
         if obj.photo:
-            request = self.context.get('request')
+            request = self.context.get("request")
             photo_url = obj.photo.url
             return request.build_absolute_uri(photo_url)
         return None
