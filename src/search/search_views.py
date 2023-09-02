@@ -56,6 +56,19 @@ class FilterParams(APIView):
         return Response(options.json())
 
 
+class FilterCountries(APIView):
+    def get(self, request, departureid):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        countries = requests.get(
+            f"http://tourvisor.ru/xml/listdev.php?type=country&cndep={departureid}"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}"
+        )
+        countries.raise_for_status()
+        return Response(countries.json())
+
+
 class TourActualizeView(APIView):
     def get(self, request, tourid):
         authlogin = settings.AUTHLOGIN

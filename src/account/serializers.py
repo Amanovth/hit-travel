@@ -26,7 +26,7 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
         )
 
         if password != confirm_password:
-            raise serializers.ValidationError({'response': False, 'password': _("Password doesn't match.")})
+            raise serializers.ValidationError({'response': False, 'password': _("Пароли не совпадают.")})
         user.set_password(password)
         user.save()
         return user

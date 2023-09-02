@@ -24,6 +24,11 @@ class RegisterAPIView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
+            email = serializer.validated_data['email']
+
+            if User.objects.filter(email=email).exists():
+                return Response({'response': False, 'message': 'Пользователь с таким email уже существует.'})
+
             serializer.save()
 
             email = serializer.data['email']
@@ -45,7 +50,7 @@ class RegisterAPIView(generics.CreateAPIView):
             Util.send_email(email_data)
 
             return Response({'response': True}, status=status.HTTP_201_CREATED)
-        return Response({'response': False, 'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'response': False, 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyEmailAPIView(generics.GenericAPIView):
