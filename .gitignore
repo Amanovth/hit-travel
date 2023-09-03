@@ -21,6 +21,7 @@ db.sqlite3
 sqlite.db
 venv
 runserver.sh
+static/
 
 __pycache__/
 */__pycache__/
