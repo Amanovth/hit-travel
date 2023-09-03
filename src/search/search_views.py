@@ -23,7 +23,10 @@ class SearchView(APIView):
         requestid = requests.get(search_url)
         requestid.raise_for_status()
 
-        return requestid.json()["result"]["requestid"]
+        try:
+            return requestid.json()["result"]["requestid"]
+        except KeyError:
+            return Response({"response": False})
 
     def get(self, request):
         requestid = self.get_search_result(request.query_params)

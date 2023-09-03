@@ -53,9 +53,9 @@ class User(AbstractUser):
     date_birth = models.DateField(_('Date of birth'), null=True, blank=True)
     passport_id = models.CharField(_('Passport ID'), max_length=8, null=True, blank=True, unique=True)
     county = models.CharField(_('Country'), max_length=100, null=True, blank=True)
-    tourist_id = models.IntegerField(_('ID Туриста'))
+    tourist_id = models.IntegerField(_('ID Туриста'), null=True, blank=True)
 
-    USERNAME_FIELD = 'passport_id'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = UserManager()
@@ -68,3 +68,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
+
+class OrdeerHistory(models.Model):
+    pass

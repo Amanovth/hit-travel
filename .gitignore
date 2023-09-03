@@ -4,7 +4,7 @@ idea
 .env.dev
 .env
 env/
-.vscode
+.vscode/
 
 # Docker
 docker-compose.yml
@@ -20,6 +20,7 @@ dist
 db.sqlite3
 sqlite.db
 venv
+runserver.sh
 
 __pycache__/
 */__pycache__/

@@ -1,6 +1,7 @@
 import os
 import shutil
 import string
+import requests
 from random import randint, choices
 from datetime import datetime, timedelta, timezone
 from rest_framework import generics, status, permissions, views
@@ -21,15 +22,33 @@ class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterAPIViewSerializer
 
+    def add_tourist(self, user):
+        crm_data = {
+            "u_surname": user.last_name,
+            "u_name": user.first_name,
+            "u_email": user.email,
+            "u_phone": user.phone,
+        }
+
+        key = settings.KEY
+        res = requests.post(
+            f"https://api.u-on.ru/{key}/user/create.json", data=crm_data
+        )
+        res.raise_for_status()
+        user.tourist_id = res.json()["result"]
+        user.save()
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-
+        """ Register user in system
+        """
         if serializer.is_valid():
             email = serializer.data["email"]
             first_name = serializer.data["first_name"]
             last_name = serializer.data["last_name"]
             password = serializer.data["password"]
             confirm_password = serializer.data["confirm_password"]
+            phone = serializer.data["phone"]
 
             if User.objects.filter(email=email).exists():
                 return Response(
@@ -44,7 +63,9 @@ class RegisterAPIView(generics.CreateAPIView):
                     {"response": False, "password": _("Пароли не совпадают.")}
                 )
 
-            user = User(email=email, first_name=first_name, last_name=last_name)
+            user = User(
+                email=email, first_name=first_name, last_name=last_name, phone=phone
+            )
             user.set_password(password)
             user.save()
 
@@ -52,15 +73,21 @@ class RegisterAPIView(generics.CreateAPIView):
             user.verification_code = randint(100_000, 999_999)
             user.save()
 
+            """ Create tourist in https://u-on.ru
+            """
+            self.add_tourist(user)
+
+            """ Send verification code to user
+            """
             email_body = (
-                f"Hello! {user.last_name} {user.first_name}\n\n"
-                f"To confirm registration in the system, enter the code below:\n\n"
+                f"Привет! {user.last_name} {user.first_name}\n\n"
+                f"Для подтверждения регистрации в системе введите код ниже:\n\n"
                 f"{user.verification_code}"
             )
 
             email_data = {
                 "email_body": email_body,
-                "email_subject": "Confirm your registration",
+                "email_subject": "Подтвердите регистрацию",
                 "to_email": user.email,
             }
 
@@ -315,7 +342,7 @@ class SetNewPasswordAPIView(generics.UpdateAPIView):
 
             user = get_object_or_404(User, pk=request.user.pk)
 
-            if not user.is_verfied or not user.is_authenticated:
+            if not user.is_verified or not user.is_authenticated:
                 return Response(
                     {"reponse": False, "message": "Вы неавторизованы"},
                     status=status.HTTP_401_UNAUTHORIZED,
