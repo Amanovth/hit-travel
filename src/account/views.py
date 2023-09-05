@@ -94,7 +94,7 @@ class RegisterAPIView(generics.CreateAPIView):
             Util.send_email(email_data)
 
             return Response({"response": True}, status=status.HTTP_201_CREATED)
-        return Response({"response": False})
+        return Response(serializer.errors)
 
 
 class VerifyEmailAPIView(generics.GenericAPIView):
@@ -411,3 +411,37 @@ class ProfileInfoAPIView(views.APIView):
 
         serializer = PersonalInfoSerializer(user, context={"request": request})
         return Response({"response": True, "data": serializer.data})
+
+
+class OrderHistoryView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        queryset = OrderHistory.objects.filter(user=request.user)
+        serializer = OrderHistoryToursSerializer(queryset, many=True)
+        response = []
+
+        for i in serializer.data:
+            detail = requests.get(
+                f"http://tourvisor.ru/xml/actualize.php?tourid={i['tourid']}&request=0"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
+            detail.raise_for_status()
+            flights = requests.get(
+                f"http://tourvisor.ru/xml/actdetail.php?tourid={i['tourid']}"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
+            flights.raise_for_status()
+            
+            d = {}
+            d['data'] = detail.json()['data']
+            try:
+                d['flights'] = flights.json()['flights']
+            except KeyError:
+                d['flights'] = flights.json()
+            response.append(d)
+            
+        return Response(response)

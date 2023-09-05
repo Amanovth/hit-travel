@@ -31,16 +31,14 @@ class SearchView(APIView):
     def get(self, request):
         requestid = self.get_search_result(request.query_params)
 
-        time.sleep(5)
+        time.sleep(6)
         url = (
             f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
-            f"&authlogin={self.authlogin}&authpass={self.authpass}&onpage=5"
+            f"&authlogin={self.authlogin}&authpass={self.authpass}"
         )
 
         response = requests.get(url)
         response.raise_for_status()
-
-        state = response.json()["data"]["status"]["state"]
 
         return Response(response.json())
 

@@ -1,9 +1,13 @@
+import locale
 from rest_framework import serializers
 from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 
-from .models import User
+from .models import *
+
+
+locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 
 
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
@@ -11,7 +15,14 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "phone", "first_name", "last_name", "password", "confirm_password"]
+        fields = [
+            "email",
+            "phone",
+            "first_name",
+            "last_name",
+            "password",
+            "confirm_password",
+        ]
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -111,10 +122,26 @@ class UpdateProfilePhotoSerializer(serializers.ModelSerializer):
         fields = ["photo"]
 
 
+class BonusHistorySerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    valid = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BonusHistory
+        fields = ["id", "name", "sum", "currency", "created_at", "valid"]
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%d %B %Y %H:%M")
+
+    def get_valid(self, obj):
+        return obj.valid.strftime("%d %B %Y")
+
+
 class PersonalInfoSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     date_joined = serializers.SerializerMethodField()
     last_login = serializers.SerializerMethodField()
+    bonus_history = BonusHistorySerializer(many=True)
 
     class Meta:
         model = User
@@ -128,6 +155,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "photo",
             "balance",
             "bonuses",
+            "bonus_history",
         ]
 
     def get_photo(self, obj):
@@ -143,3 +171,9 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
     def get_last_login(self, obj):
         if obj.last_login:
             return obj.last_login.strftime("%Y/%m/%d %H:%M")
+
+
+class OrderHistoryToursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderHistory
+        fields = "__all__"

@@ -4,6 +4,16 @@ from django.contrib.auth.admin import UserAdmin, Group
 from .models import *
 
 
+class OrderHistoryInline(admin.StackedInline):
+    model = OrderHistory
+    extra = 0
+    
+
+class BonusHistory(admin.StackedInline):
+    model = BonusHistory
+    extra = 0
+
+
 @admin.register(User)
 class UserAdmin(UserAdmin):
     fieldsets = (
@@ -22,7 +32,7 @@ class UserAdmin(UserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
-        (_("Verification"), {"fields": ("is_verified", "verification_code", "verification_code_time")}),
+        (_("Верификация"), {"fields": ("is_verified", "verification_code", "verification_code_time")}),
 
     )
     add_fieldsets = (
@@ -38,3 +48,4 @@ class UserAdmin(UserAdmin):
     list_display = ("email", "first_name", "last_name", "is_staff")
     search_fields = ("first_name", "last_name", "email")
     ordering = ("email",)
+    inlines = (OrderHistoryInline, BonusHistory,)

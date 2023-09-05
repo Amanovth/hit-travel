@@ -161,6 +161,21 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
+JAZZMIN_SETTINGS = {
+    "site_title": "Hit-Travel",
+    "site_header": "Hit-Travel",
+    "site_brand": "Hit-Travel",
+    "site_logo": "hit-logo.png",
+    "site_logo_classes": "img",
+    "show_ui_builder": True,
+    "icons": {
+        "account": "fas fa-users-cog",
+        "account.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "search.favorites": "fas fa-heart",
+    },
+}
+
 """ Global variables
 """
 EMAIL_USE_TLS = True

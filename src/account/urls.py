@@ -17,5 +17,5 @@ urlpatterns = [
     path('profile/update-photo', UpdateProfilePhotoAPIView.as_view(), name='Update profile photo'),
     path('profile/remove-photo', RemoveProfilePhotoAPIView.as_view(), name='Remove profile photo'),
     path('profile/personal', ProfileInfoAPIView.as_view(), name='Profile information'),
-    
+    path('history/orders', OrderHistoryView.as_view(), name='order-history'),
  ]

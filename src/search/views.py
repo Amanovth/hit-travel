@@ -29,13 +29,15 @@ class AddRemoveTourFavoriteView(views.APIView):
 
 
 class FavoriteToursListView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
 
         queryset = Favorites.objects.filter(user=request.user)
         serializer = FavoriteToursSerializer(queryset, many=True)
-        reponse = []
+        response = []
 
         for i in serializer.data:
             detail = requests.get(
@@ -48,6 +50,13 @@ class FavoriteToursListView(views.APIView):
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"
             )
             flights.raise_for_status()
-            reponse.append({'detail': detail.json(), 'flights': flights.json()})
             
-        return Response(reponse)
+            d = {}
+            d['data'] = detail.json()['data']
+            try:
+                d['flights'] = flights.json()['flights']
+            except KeyError:
+                d['flights'] = flights.json()
+            response.append(d)
+                
+        return Response(response)

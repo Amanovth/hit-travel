@@ -38,7 +38,7 @@ class User(AbstractUser):
     username = None
     balance = models.DecimalField(_('Balance'), default=0, max_digits=10, decimal_places=2)
     bonuses = models.DecimalField(_('Bonuses'), default=0, max_digits=10, decimal_places=2)
-    email = models.EmailField(_('Email'))
+    email = models.EmailField(_('Email'), unique=True)
     is_verified = models.BooleanField(_('Verification'), default=False)
     phone = models.CharField(verbose_name=_('Phone'), max_length=12, unique=True, null=True, blank=True)
     verification_code = models.IntegerField(_('Verification code'), null=True, blank=True)
@@ -69,5 +69,34 @@ class User(AbstractUser):
         return self.email
     
 
-class OrdeerHistory(models.Model):
-    pass
+class OrderHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_history')
+    tourid = models.CharField(_('Код тура'), max_length=100, null=True, blank=True)
+    
+    def __str__(self):
+        return self.user.email
+    
+    class Meta:
+        verbose_name = _("История заказов")
+        verbose_name_plural = _("История заказов")
+
+
+class BonusHistory(models.Model):
+    CURRENCY_CHOICES = (
+        ("СОМ", "СОМ"),
+        ("USD", "USD")
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bonus_history')
+    name = models.CharField(_("Название бонуса"), max_length=255)
+    created_at = models.DateTimeField(_("Дата"))
+    valid = models.DateField(_("Действителен до"))
+    sum = models.IntegerField(_("Сумма"), default=0)
+    currency = models.CharField(_("Валюта"), choices=CURRENCY_CHOICES, max_length=5, default="СОМ")
+    
+    def __str__(self):
+        return self.user.email
+    
+    class Meta:
+        verbose_name  = _("История бонусов")
+        verbose_name_plural = _("История бонусов")
