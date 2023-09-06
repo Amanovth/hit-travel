@@ -132,10 +132,15 @@ class VerifyEmailAPIView(generics.GenericAPIView):
                     if user.verification_code == code:
                         user.is_verified = True
                         user.save()
+                        
+                        token, created = Token.objects.get_or_create(user=user)
+
                         return Response(
                             {
                                 "response": True,
                                 "message": _("Верификация прошла успешно!"),
+                                "token": token.key,
+                                "email": user.email,
                             }
                         )
                     return Response(
@@ -175,23 +180,24 @@ class SendAgainCodeAPIView(generics.GenericAPIView):
                         "message": _("Пользователь с таким email не существует"),
                     },
                 )
+            if not user.is_verified:
+                user.verification_code = randint(100_000, 999_999)
+                user.verification_code_time = datetime.now()
+                user.save()
 
-            user.verification_code = randint(100_000, 999_999)
-            user.verification_code_time = datetime.now()
-            user.save()
+                email_body = f"Ваш новый код активации:\n\n" f"{user.verification_code}"
 
-            email_body = f"Ваш новый код активации:\n\n" f"{user.verification_code}"
+                email_data = {
+                    "email_body": email_body,
+                    "email_subject": "Подтвердите регистрацию",
+                    "to_email": user.email,
+                }
 
-            email_data = {
-                "email_body": email_body,
-                "email_subject": "Подтвердите регистрацию",
-                "to_email": user.email,
-            }
-
-            Util.send_email(email_data)
-            return Response(
-                {"response": True, "message": _("Код подтверждения успешно отправлен")}
-            )
+                Util.send_email(email_data)
+                return Response(
+                    {"response": True, "message": _("Код подтверждения успешно отправлен")}
+                )
+            return Response({"response": False, "message": _("Аккаунт уже подтвержден")})
         return Response(
             {"response": False, "detail": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
@@ -415,7 +421,7 @@ class ProfileInfoAPIView(views.APIView):
 
 class OrderHistoryView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
@@ -435,13 +441,25 @@ class OrderHistoryView(views.APIView):
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"
             )
             flights.raise_for_status()
-            
+
             d = {}
-            d['data'] = detail.json()['data']
+            d["data"] = detail.json()["data"]
             try:
-                d['flights'] = flights.json()['flights']
+                d["flights"] = flights.json()["flights"]
             except KeyError:
-                d['flights'] = flights.json()
+                d["flights"] = flights.json()
             response.append(d)
-            
+
         return Response(response)
+
+
+class UpdateInfoView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UpdateInfoSerializer(instance=user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"response": True, "message": "Успешно обновлено"})
+        return Response({"response": False})

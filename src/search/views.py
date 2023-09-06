@@ -18,12 +18,12 @@ class AddRemoveTourFavoriteView(views.APIView):
         if not created:
             favorite.delete()
             return Response(
-                {"response": True, "detail": "Removed from favorites"},
+                {"response": True, "message": "Удалено из избранного"},
                 status=status.HTTP_200_OK,
             )
 
         return Response(
-            {"response": True, "detail": "Added to favorites"},
+            {"response": True, "message": "Добавлено в избранное"},
             status=status.HTTP_200_OK,
         )
 

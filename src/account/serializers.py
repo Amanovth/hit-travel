@@ -177,3 +177,9 @@ class OrderHistoryToursSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderHistory
         fields = "__all__"
+
+
+class UpdateInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name']

@@ -21,7 +21,9 @@ class SearchView(APIView):
             search_url += f"&{param}={value}"
 
         requestid = requests.get(search_url)
-        requestid.raise_for_status()
+
+        if requestid.status_code != 200:
+            return Response({"response": False})
 
         try:
             return requestid.json()["result"]["requestid"]
@@ -38,8 +40,9 @@ class SearchView(APIView):
         )
 
         response = requests.get(url)
-        response.raise_for_status()
 
+        if response.status_code != 200:
+            return Response({"response": False})
         return Response(response.json())
 
 
@@ -53,7 +56,9 @@ class FilterParams(APIView):
             f"country,departure,region,subregion,meal,stars,operator,currency,services"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
-        options.raise_for_status()
+
+        if options.status_code != 200:
+            return Response({"response": False})
         return Response(options.json())
 
 
@@ -66,7 +71,8 @@ class FilterCountries(APIView):
             f"http://tourvisor.ru/xml/listdev.php?type=country&cndep={departureid}"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
-        countries.raise_for_status()
+        if countries.status_code != 200:
+            return Response({"response": False})
         return Response(countries.json())
 
 
@@ -79,7 +85,9 @@ class TourActualizeView(APIView):
             f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
-        actualize.raise_for_status()
+
+        if actualize.status_code != 200:
+            return Response({"response": False})
         return Response(actualize.json())
 
 
@@ -92,7 +100,8 @@ class TourActdetailView(APIView):
             f"http://tourvisor.ru/xml/actdetail.php?tourid={tourid}"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
-        actualize.raise_for_status()
+        if actualize.status_code != 200:
+            return Response({"response": False})
         return Response(actualize.json())
 
 
@@ -106,49 +115,69 @@ class HotelDetailView(APIView):
             f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
         )
 
-        hoteldetail.raise_for_status()
+        if hoteldetail.status_code != 200:
+            return Response({"response": False})
         return Response(hoteldetail.json())
 
 
-# class SearchView(APIView):
-#     authlogin = settings.AUTHLOGIN
-#     authpass = settings.AUTHPASS
+class HotToursView(APIView):
+    def get(self, request):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
 
-#     def get_search_result(self, query_params):
-#         search_url = (
-#             f"http://tourvisor.ru/xml/search.php?format=json"
-#             f"&authlogin={self.authlogin}&authpass={self.authpass}"
-#         )
+        hottours = requests.get(
+            f"http://tourvisor.ru/xml/hottours.php?city=80&picturetype=1"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
+        )
 
-#         for param, value in query_params.items():
-#             search_url += f"&{param}={value}"
+        if hottours.status_code != 200:
+            return Response({"response": False})
+        return Response(hottours.json())
 
-#         requestid = requests.get(search_url)
-#         requestid.raise_for_status()
 
-#         return requestid.json()["result"]["requestid"]
+class HotTourDetailView(APIView):
+    def get(self, request, tourid):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
 
-#     def get_search_status(self, requestid):
-#         status_url = (
-#             f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
-#             f"&authlogin={self.authlogin}&authpass={self.authpass}&onpage=2"
-#         )
+        # Get hotelcode to return hotel detail
+        try:
+            tour = requests.get(
+                f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=1"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
 
-#         response = requests.get(status_url)
-#         response.raise_for_status()
+            if tour.status_code != 200:
+                return Response({"response": False})
+        except KeyError:
+            return Response({"reponse": False})
 
-#         state = response.json()["data"]["status"]["state"]
-#         return state, response.json()
+        try:
+            hoteldetail = requests.get(
+                f"http://tourvisor.ru/xml/hotel.php?hotelcode={tour.json()['data']['tour']['hotelcode']}"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
+            )
 
-#     def get(self, request):
-#         requestid = self.get_search_result(request.query_params)
-#         state = "searching"
+            if hoteldetail.status_code != 200:
+                return Response({"response": False})
+        except KeyError:
+            return Response({"reponse": False})
 
-#         while state == "searching":
-#             time.sleep(0.1)
-#             state, response_data = self.get_search_status(requestid)
+        # Get flights on this tour
+        try:
+            flights = requests.get(
+                f"http://tourvisor.ru/xml/actdetail.php?tourid={tourid}"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
+            if flights.status_code != 200:
+                return Response({"response": False})
+        except KeyError:
+            return Response({"response": False})
 
-#         if state == "finished":
-#             return Response(response_data)
-#         else:
-#             return Response("Time Out")
+        return Response(
+            {
+                "hotel": hoteldetail.json()["data"]["hotel"],
+                "tour": tour.json()["data"]["tour"],
+                "flights": flights.json(),
+            }
+        )
