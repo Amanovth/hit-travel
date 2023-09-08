@@ -52,7 +52,8 @@ class FavoriteToursListView(views.APIView):
             flights.raise_for_status()
             
             d = {}
-            d['data'] = detail.json()['data']
+            d['tourid'] = i['tourid']
+            d['tour'] = detail.json()['data']['tour']
             try:
                 d['flights'] = flights.json()['flights']
             except KeyError:

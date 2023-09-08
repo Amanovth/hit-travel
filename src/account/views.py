@@ -16,6 +16,7 @@ from django.conf import settings
 
 from ..base.utils import Util
 from .serializers import *
+from .services import get_user_by_phone
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -463,3 +464,13 @@ class UpdateInfoView(views.APIView):
             serializer.save()
             return Response({"response": True, "message": "Успешно обновлено"})
         return Response({"response": False})
+    
+    
+class GetUserView(views.APIView):
+    def get(self, request):
+        user = request.user
+        data = get_user_by_phone(user.phone)
+        
+        return Response(data)
+        
+        

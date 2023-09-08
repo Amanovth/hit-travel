@@ -88,7 +88,7 @@ class TourActualizeView(APIView):
 
         if actualize.status_code != 200:
             return Response({"response": False})
-        return Response(actualize.json())
+        return Response(actualize.json()["data"])
 
 
 class TourActdetailView(APIView):
@@ -117,10 +117,10 @@ class HotelDetailView(APIView):
 
         if hoteldetail.status_code != 200:
             return Response({"response": False})
-        return Response(hoteldetail.json())
+        return Response(hoteldetail.json()["data"])
 
 
-class HotToursView(APIView):
+class HotToursListView(APIView):
     def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
@@ -171,13 +171,14 @@ class HotTourDetailView(APIView):
             )
             if flights.status_code != 200:
                 return Response({"response": False})
+            flights = flights.json()["flights"]
         except KeyError:
-            return Response({"response": False})
+            flights = flights.json()
 
         return Response(
             {
                 "hotel": hoteldetail.json()["data"]["hotel"],
                 "tour": tour.json()["data"]["tour"],
-                "flights": flights.json(),
+                "flights": flights,
             }
         )

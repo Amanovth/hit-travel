@@ -23,6 +23,9 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
             "password",
             "confirm_password",
         ]
+    
+    def save(self, **kwargs):
+        pass
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -180,6 +183,9 @@ class OrderHistoryToursSerializer(serializers.ModelSerializer):
 
 
 class UpdateInfoSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    
     class Meta:
         model = User
         fields = ['first_name', 'last_name']
