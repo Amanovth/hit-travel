@@ -1,6 +1,8 @@
 from django.urls import path, include
 
 from .views import *
+from .profile_views import *
+from .request_views import *
 
 urlpatterns = [
     # Auth
@@ -17,7 +19,14 @@ urlpatterns = [
     path('profile/update-photo', UpdateProfilePhotoAPIView.as_view(), name='Update profile photo'),
     path('profile/remove-photo', RemoveProfilePhotoAPIView.as_view(), name='Remove profile photo'),
     path('profile/personal', ProfileInfoAPIView.as_view(), name='Profile information'),
-    path('history/orders', OrderHistoryView.as_view(), name='order-history'),
     path('profile/update-info', UpdateInfoView.as_view(), name='update-info'),
-    path('get-user', GetUserView.as_view(), name='get-user')
+    path('profile/delete', DeleteProfileView.as_view(), name='delete-profile'),
+    # path('get-user', GetUserView.as_view(), name='get-user'),
+    
+    # History
+    path('history/orders', OrderHistoryView.as_view(), name='order-history'),
+    
+    
+    # Request
+    path('tour/request', TourRequestView.as_view(), name='tour-request')
  ]

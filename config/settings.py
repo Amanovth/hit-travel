@@ -142,7 +142,14 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": show_toolbar,
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:3003",
+    "http://localhost:3004",
+    "https://hittravel.vercel.app"
+]
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -162,7 +169,9 @@ CORS_ALLOW_METHODS = (
     "PATCH",
     "POST",
     "PUT",
+    "DELETE"
 )
+
 
 JAZZMIN_SETTINGS = {
     "site_title": "Hit-Travel",

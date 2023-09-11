@@ -5,6 +5,10 @@ from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+
+from .models import Favorites
+from src.base.services import get_isfavorite
 
 
 class SearchView(APIView):
@@ -135,10 +139,13 @@ class HotToursListView(APIView):
         return Response(hottours.json())
 
 
-class HotTourDetailView(APIView):
+class TourDetailView(APIView):
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
     def get(self, request, tourid):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
+        user = request.user
 
         # Get hotelcode to return hotel detail
         try:
@@ -152,16 +159,16 @@ class HotTourDetailView(APIView):
         except KeyError:
             return Response({"reponse": False})
 
-        try:
-            hoteldetail = requests.get(
-                f"http://tourvisor.ru/xml/hotel.php?hotelcode={tour.json()['data']['tour']['hotelcode']}"
-                f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
-            )
+        # try:
+        #     hoteldetail = requests.get(
+        #         f"http://tourvisor.ru/xml/hotel.php?hotelcode={tour.json()['data']['tour']['hotelcode']}"
+        #         f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
+        #     )
 
-            if hoteldetail.status_code != 200:
-                return Response({"response": False})
-        except KeyError:
-            return Response({"reponse": False})
+        #     if hoteldetail.status_code != 200:
+        #         return Response({"response": False})
+        # except KeyError:
+        #     return Response({"reponse": False})
 
         # Get flights on this tour
         try:
@@ -174,11 +181,32 @@ class HotTourDetailView(APIView):
             flights = flights.json()["flights"]
         except KeyError:
             flights = flights.json()
-
+            
+        if user.is_anonymous:
+            isfavorite = False
+        else:
+            isfavorite = get_isfavorite(user=user, tourid=tourid)
+        
         return Response(
             {
-                "hotel": hoteldetail.json()["data"]["hotel"],
+                "isfavorite": isfavorite,
+                # "hotel": hoteldetail.json()["data"]["hotel"],
                 "tour": tour.json()["data"]["tour"],
                 "flights": flights,
             }
         )
+
+
+class RecommendationsView(APIView):
+    def get(self, request):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+        
+        recommendations = requests.get(
+            f"http://tourvisor.ru/xml/hottours.php?picturetype=1&items=30"
+            f"&format=json&authpass={authpass}&authlogin={authlogin}"
+        )
+        
+        if recommendations.status_code != 200:
+            return Response({"response": False})
+        return Response(recommendations.json())

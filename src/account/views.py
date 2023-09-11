@@ -1,5 +1,3 @@
-import os
-import shutil
 import string
 import requests
 from random import randint, choices
@@ -16,7 +14,7 @@ from django.conf import settings
 
 from ..base.utils import Util
 from .serializers import *
-from .services import get_user_by_phone
+from .services import get_user_by_phone, bonus_card_create
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -36,11 +34,21 @@ class RegisterAPIView(generics.CreateAPIView):
             f"https://api.u-on.ru/{key}/user/create.json", data=crm_data
         )
         res.raise_for_status()
-        user.tourist_id = res.json()["result"]
+        user.tourist_id = res.json()["id"]
         user.save()
+        return
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
+
+        if User.objects.filter(email=request.data['email']).exists():
+            return Response(
+                {
+                    "response": False,
+                    "message": "Пользователь с таким email уже существует.",
+                }
+            )
+
         """ Register user in system
         """
         if serializer.is_valid():
@@ -50,14 +58,6 @@ class RegisterAPIView(generics.CreateAPIView):
             password = serializer.data["password"]
             confirm_password = serializer.data["confirm_password"]
             phone = serializer.data["phone"]
-
-            if User.objects.filter(email=email).exists():
-                return Response(
-                    {
-                        "response": False,
-                        "message": "Пользователь с таким email уже существует.",
-                    }
-                )
 
             if password != confirm_password:
                 return Response(
@@ -94,7 +94,17 @@ class RegisterAPIView(generics.CreateAPIView):
 
             Util.send_email(email_data)
 
-            return Response({"response": True}, status=status.HTTP_201_CREATED)
+            # Get manager_id and touris_id
+            data = get_user_by_phone(user.phone)
+            if data:
+                user.tourist_id = int(data["u_id"])
+                user.manager_id = int(data["manager_id"])
+                user.save()
+            
+            # Create bonus card
+            b_card = bonus_card_create(user)
+            if b_card:
+                return Response({"response": True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors)
 
 
@@ -133,7 +143,7 @@ class VerifyEmailAPIView(generics.GenericAPIView):
                     if user.verification_code == code:
                         user.is_verified = True
                         user.save()
-                        
+
                         token, created = Token.objects.get_or_create(user=user)
 
                         return Response(
@@ -196,9 +206,14 @@ class SendAgainCodeAPIView(generics.GenericAPIView):
 
                 Util.send_email(email_data)
                 return Response(
-                    {"response": True, "message": _("Код подтверждения успешно отправлен")}
+                    {
+                        "response": True,
+                        "message": _("Код подтверждения успешно отправлен"),
+                    }
                 )
-            return Response({"response": False, "message": _("Аккаунт уже подтвержден")})
+            return Response(
+                {"response": False, "message": _("Аккаунт уже подтвержден")}
+            )
         return Response(
             {"response": False, "detail": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
@@ -369,57 +384,6 @@ class SetNewPasswordAPIView(generics.UpdateAPIView):
         )
 
 
-class UpdateProfilePhotoAPIView(generics.UpdateAPIView):
-    serializer_class = UpdateProfilePhotoSerializer
-    queryset = User.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-
-class RemoveProfilePhotoAPIView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-
-        if user.photo:
-            image_path = os.path.join(
-                settings.MEDIA_ROOT, f"profile_photos/user_{user.pk}"
-            )
-            if os.path.exists(image_path):
-                shutil.rmtree(image_path)
-
-            user.photo = "default_profile_photo.png"
-            user.save()
-            return Response(
-                {"response": True, "message": "Фотография профиля удалена."}
-            )
-        return Response(
-            {
-                "response": False,
-                "messafe": "Нет фотографии профиля, которую можно удалить.",
-            }
-        )
-
-
-class ProfileInfoAPIView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        try:
-            user = request.user
-        except ObjectDoesNotExist:
-            return Response(
-                {"response": False, "detail": "Пользователь не найден"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        serializer = PersonalInfoSerializer(user, context={"request": request})
-        return Response({"response": True, "data": serializer.data})
-
-
 class OrderHistoryView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -444,7 +408,8 @@ class OrderHistoryView(views.APIView):
             flights.raise_for_status()
 
             d = {}
-            d["data"] = detail.json()["data"]
+            d["tourid"] = i["tourid"]
+            d["tour"] = detail.json()["data"]["tour"]
             try:
                 d["flights"] = flights.json()["flights"]
             except KeyError:
@@ -452,25 +417,17 @@ class OrderHistoryView(views.APIView):
             response.append(d)
 
         return Response(response)
+    
 
-
-class UpdateInfoView(views.APIView):
+class GetUserView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def patch(self, request, *args, **kwargs):
-        user = request.user
-        serializer = UpdateInfoSerializer(instance=user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"response": True, "message": "Успешно обновлено"})
-        return Response({"response": False})
-    
-    
-class GetUserView(views.APIView):
     def get(self, request):
         user = request.user
-        data = get_user_by_phone(user.phone)
-        
-        return Response(data)
-        
-        
+        if not user.is_anonymous:
+            if user.phone:
+                data = get_user_by_phone(user.phone)
+
+                return Response(data)
+            return Response({"response": False})
+        return Response({"response": False})

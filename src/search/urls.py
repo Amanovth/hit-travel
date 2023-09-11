@@ -8,9 +8,10 @@ urlpatterns = [
     path('api/filter-params', FilterParams.as_view(), name='filter-options'),
     path('api/country/<int:departureid>', FilterCountries.as_view(), name='get-countries'),
     path('api/hottours', HotToursListView.as_view(), name='hottours'),
+    path('api/recommendations', RecommendationsView.as_view(), name='recommendations '),
     # Actualization
-    path('api/detail/hottour/<str:tourid>', HotTourDetailView.as_view(), name='hottours'),
-    path('api/detail/tour/<str:tourid>', TourActualizeView.as_view(), name='actualize'),
+    path('api/detail/tour/<str:tourid>', TourDetailView.as_view(), name='hottours'),
+    # path('api/detail/tour/<str:tourid>', TourActualizeView.as_view(), name='actualize'),
     path('api/detail/flights/<str:tourid>', TourActdetailView.as_view(), name='tour-detail'),
     # Hotel info
     path('api/detail/hotel/<str:hotelcode>', HotelDetailView.as_view(), name='hotel-detail'),

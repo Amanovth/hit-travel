@@ -23,9 +23,19 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
             "password",
             "confirm_password",
         ]
-    
-    def save(self, **kwargs):
-        pass
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {
+                    "response": False,
+                    "message": _("Пользователь с таким email уже существует."),
+                }
+            )
+
+        return attrs
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -185,7 +195,22 @@ class OrderHistoryToursSerializer(serializers.ModelSerializer):
 class UpdateInfoSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
-    
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name']
+        fields = ["first_name", "last_name"]
+
+
+class TourRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TourRequest
+        fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "gender",
+            "citizenship",
+            "inn",
+            "tourid",
+        ]
