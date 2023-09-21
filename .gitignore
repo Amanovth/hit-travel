@@ -31,6 +31,7 @@ __pycache__/
 
 !*media/.gitkeep
 media/profile_photos
+media/payments
 !src/*/migrations/__init__.py
 src/*/migrations/*
 log/debug.log
