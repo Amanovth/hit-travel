@@ -28,5 +28,8 @@ urlpatterns = [
     
     
     # Request
-    path('tour/request', TourRequestView.as_view(), name='tour-request')
- ]
+    path('tour/request', TourRequestView.as_view(), name='tour-request'),
+    
+    # Payments
+    path('payment/qrcode', PaymentsAPIView.as_view(), name='qrcode')
+]

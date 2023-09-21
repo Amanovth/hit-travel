@@ -94,3 +94,9 @@ class TourRequestAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "phone", "first_name", "last_name")
     list_display_links = ("id", "user")
     search_fields = ("email", "phone", "first_name", "last_name", "inn")
+    
+    
+@admin.register(Payments)
+class PaymentsAdmin(admin.ModelAdmin):
+    list_display = ("id", "full_name", "bank_name")
+    list_display_links = ("id", "full_name")

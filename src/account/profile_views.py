@@ -6,13 +6,16 @@ from django.conf import settings
 from .serializers import *
 
 
-class UpdateProfilePhotoAPIView(generics.UpdateAPIView):
-    serializer_class = UpdateProfilePhotoSerializer
+class UpdateProfilePhotoAPIView(views.APIView):
     queryset = User.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
+    
+    def post(self, request):
+        serializer = UpdateProfilePhotoSerializer(instance=request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"response": True, "message": "Успешно обновлено"})
+        return Response({"response": False})
 
 
 class RemoveProfilePhotoAPIView(views.APIView):
@@ -28,7 +31,7 @@ class RemoveProfilePhotoAPIView(views.APIView):
             if os.path.exists(image_path):
                 shutil.rmtree(image_path)
 
-            user.photo = "default_profile_photo.png"
+            user.photo = "default.png"
             user.save()
             return Response(
                 {"response": True, "message": "Фотография профиля удалена."}
@@ -60,7 +63,7 @@ class ProfileInfoAPIView(views.APIView):
 class UpdateInfoView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def patch(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user = request.user
         serializer = UpdateInfoSerializer(instance=user, data=request.data)
         if serializer.is_valid():

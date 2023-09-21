@@ -41,7 +41,7 @@ class FavoriteToursListView(views.APIView):
 
         for i in serializer.data:
             detail = requests.get(
-                f"http://tourvisor.ru/xml/actualize.php?tourid={i['tourid']}&request=0"
+                f"http://tourvisor.ru/xml/actualize.php?tourid={i['tourid']}"
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"
             )
             detail.raise_for_status()
@@ -52,12 +52,18 @@ class FavoriteToursListView(views.APIView):
             flights.raise_for_status()
             
             d = {}
-            d['tourid'] = i['tourid']
-            d['tour'] = detail.json()['data']['tour']
             try:
+                d['tourid'] = i['tourid']
+                d['isfavorite'] = True
+                d['tour'] = detail.json()['data']['tour']
+            except KeyError:
+                pass
+            
+            try: 
                 d['flights'] = flights.json()['flights']
             except KeyError:
                 d['flights'] = flights.json()
+            
             response.append(d)
                 
         return Response(response)

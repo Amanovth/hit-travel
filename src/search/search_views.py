@@ -57,13 +57,37 @@ class FilterParams(APIView):
 
         options = requests.get(
             f"http://tourvisor.ru/xml/listdev.php?type="
-            f"country,departure,region,subregion,meal,stars,operator,currency,services"
+            f"hotel,country,departure,region,subregion,meal,stars,operator,currency"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
+        options_data = options.json()
 
+        services_operators = requests.get(
+            f"http://tourvisor.ru/xml/list.php?authlogin={authlogin}&authpass={authpass}"
+            f"&format=json&type=services,operator"
+        ).json()['lists']
+        
         if options.status_code != 200:
             return Response({"response": False})
-        return Response(options.json())
+            
+        options_data['lists']['services'] = services_operators['services']
+        options_data['lists']['operators'] = services_operators['operators']
+            
+        return Response(options_data)
+    
+
+class FilterHotels(APIView):
+    def get(self, request, hotcountry):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+        
+        hotels = requests.get(
+            f"http://tourvisor.ru/xml/listdev.php?type=hotel&format=json&hotcountry={hotcountry}"
+            f"&authpass={authpass}&authlogin={authlogin}&hotactive=1"
+        )
+        if hotels.status_code != 200:
+            return Response({"response": False})
+        return Response(hotels.json())
 
 
 class FilterCountries(APIView):

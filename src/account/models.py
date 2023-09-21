@@ -47,7 +47,7 @@ class User(AbstractUser):
     photo = models.ImageField(
         _('Profile photo'), 
         upload_to=get_path_upload_photo,
-        default='default_profile_photo.png',
+        default='default.png',
         validators=[validate_size_image],
     )
     date_birth = models.DateField(_('Date of birth'), null=True, blank=True)
@@ -131,3 +131,16 @@ class TourRequest(models.Model):
         verbose_name = _("Заявка")
         verbose_name_plural = _("Заявки")
     
+    
+class Payments(models.Model):
+    img = models.ImageField(_("QRCode"), upload_to='payments')
+    full_name = models.CharField(_("Имя получателя"), max_length=255)
+    bank_name = models.CharField(_("Название банка"), null=True, blank=True)
+    icon = models.ImageField(_("Иконка"), upload_to='payments', null=True, blank=True)
+    
+    class Meta:
+        verbose_name = 'Payment'
+        verbose_name_plural = 'Payments'
+        
+    def __str__(self):
+        return self.full_name

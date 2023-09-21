@@ -10,6 +10,25 @@ from .models import *
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 
 
+class PaymentsSerializer(serializers.ModelSerializer):
+    img = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Payments
+        fields = ['img', 'full_name', "bank_name", "icon"]
+
+    def get_img(self, obj):
+        if obj.img:
+            return f"https://hit-travel.org/media/{obj.img}"
+        return None
+    
+    def get_icon(self, obj):
+        if obj.icon:
+            return f"https://hit-travel.org/media/{obj.icon}"
+        return None
+
+
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True, max_length=68, min_length=8)
 
@@ -175,7 +194,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
         if obj.photo:
             request = self.context.get("request")
             photo_url = obj.photo.url
-            return request.build_absolute_uri(photo_url)
+            return f"https://hit-travel.org/{photo_url}"
         return None
 
     def get_date_joined(self, obj):

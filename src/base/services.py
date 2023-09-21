@@ -10,7 +10,7 @@ def get_path_upload_photo(instance, file):
 
 def validate_size_image(file_obj):
     """Проверка размера файла"""
-    megabyte_limit = 2
+    megabyte_limit = 7
     if file_obj.size > megabyte_limit * 1024 * 1024:
         raise ValidationError(f"Maximum file size {megabyte_limit}MB")
 

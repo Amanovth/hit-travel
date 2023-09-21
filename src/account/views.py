@@ -17,6 +17,14 @@ from .serializers import *
 from .services import get_user_by_phone, bonus_card_create
 
 
+class PaymentsAPIView(views.APIView):
+    def get(self, request):
+        payments = Payments.objects.all()
+        serializer = PaymentsSerializer(payments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+
 class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterAPIViewSerializer

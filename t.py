@@ -1,9 +1,25 @@
-# from datetime import datetime
+# server {
+#     listen 80;
+#     server_name hit-travel.org;
 
-# now = datetime.now()
+#     location = /favicon.ico { access_log off; log_not_found off; }
 
-# n = now.strftime("%Y-%m-%d %H:%M:%S")
+#     location /static/ {
+#         root /home/chyngyz/hit-travel;
+#     }
 
-# print(n)
+#     location  /media/ {
+#         root /home/chyngyz/hit-travel;
+#     }
 
-print(f"{20:06d}")
+#     location / {
+#         add_header 'Access-Control-Allow-Origin' '*';
+#         add_header 'Access-Control-Allow-Credentials' 'true';
+#         add_header 'Access-Coptrol-Allow-Methods' 'GET, HEAD, OPTIONS, POST, PUT, PATCH, DELETE';
+#         add_header 'Access-Control-Allow-Headers' 'Access-Control-Allow-Headers, Access-Control-Request-Method, Access-Control-Request-Header, Origin, Content-Type, Accept, Authorization, X-Requested-With, Set-cookie';
+#         add_header 'Allow' 'GET, HEAD, OPTIONS, POST, PUT, PATCH, DELETE';
+
+#         include proxy_params;
+#         proxy_pass http://unix:/home/chyngyz/hit-travel/config.sock;
+#     }
+# }
