@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from ckeditor.fields import RichTextField
 
 from ..base.services import get_path_upload_photo, validate_size_image
 
@@ -68,23 +69,6 @@ class User(AbstractUser):
         
     def __str__(self):
         return self.email
-    
-
-class OrderHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_history')
-    tourid = models.CharField(_('Код тура'), max_length=100, null=True, blank=True)
-    date_created = models.DateTimeField(_('Дата заказа'), auto_now_add=True, null=True, blank=True)
-    sum = models.CharField(_('Сумма заказа'), max_length=100, null=True, blank=True)
-    flydate = models.DateField(_('Дата вылета'), null=True, blank=True)
-    nights = models.CharField(_('Ночи'), max_length=100, null=True, blank=True)
-    created_at = models.DateTimeField(_('Дата создания'), auto_now_add=True)
-    
-    def __str__(self):
-        return self.user.email
-    
-    class Meta:
-        verbose_name = _("История заказов")
-        verbose_name_plural = _("История заказов")
 
 
 class BonusHistory(models.Model):
@@ -113,8 +97,16 @@ class TourRequest(models.Model):
         ("Муж", "Муж"),
         ("Жен", "Жен")
     )
+    STATUS_CHOICES = (
+        (1, 'Новая заявка'),
+        (2, 'В процессе покупки'),
+        (3, 'Тур куплен'),
+        (4, 'Отклонено'),
+    )
     
     user = models.ForeignKey(User, verbose_name=_("Пользователь"), on_delete=models.CASCADE)
+    status = models.IntegerField(_('Статус'), choices=STATUS_CHOICES, default=2)
+    
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)
     phone = models.CharField(_("Телефон"), max_length=100)
@@ -122,7 +114,9 @@ class TourRequest(models.Model):
     gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
     citizenship = models.CharField(_("Гражданство"), max_length=100)
     inn = models.CharField(_("ИНН"), max_length=100)
-    tourid = models.CharField(_("Код тура"), max_length=100, null=True, blank=True)
+    
+    operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000)
+    tourid = models.CharField(_("Код тура"), max_length=100)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -134,7 +128,7 @@ class TourRequest(models.Model):
     
 class Payments(models.Model):
     img = models.ImageField(_("QRCode"), upload_to='payments')
-    full_name = models.CharField(_("Имя получателя"), max_length=255)
+    description = RichTextField(_("Инструкция"), max_length=255)
     bank_name = models.CharField(_("Название банка"), null=True, blank=True)
     icon = models.ImageField(_("Иконка"), upload_to='payments', null=True, blank=True)
     
@@ -143,4 +137,4 @@ class Payments(models.Model):
         verbose_name_plural = 'Payments'
         
     def __str__(self):
-        return self.full_name
+        return self.bank_name

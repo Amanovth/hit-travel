@@ -39,18 +39,27 @@ def bonus_card_create(user):
 def create_lead(data, user):
     url = f"https://api.u-on.ru/{KEY}/lead/create.json"
 
+    # Примечание
+    note = (
+        f"{data['first_name']} {data['last_name']}\n"
+        f"{data['phone']}\n"
+        f"{data['email']}\n"
+        f"Оператор: {data['operatorlink']}"
+    )
+
     r_data = {
         "r_dat": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         # "r_u_id": user.manager_id,
         "r_cl_id": user.tourist_id,
         "u_surname": data["last_name"],
         "u_name": data["first_name"],
-        "u_phone": data['phone'],
-        "u_email": data["email"] 
+        "u_phone": data["phone"],
+        "u_email": data["email"],
+        "note": note,
     }
-    
+
     res = requests.post(url, data=r_data)
-    
+
     if res.status_code != 200:
         return False
     return True

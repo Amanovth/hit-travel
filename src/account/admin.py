@@ -1,12 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin, Group
+from ckeditor.widgets import CKEditorWidget
 from .models import *
-
-
-class OrderHistoryInline(admin.StackedInline):
-    model = OrderHistory
-    extra = 0
 
 
 class BonusHistory(admin.StackedInline):
@@ -83,20 +79,66 @@ class UserAdmin(UserAdmin):
     list_display_links = ("id", "email")
     search_fields = ("first_name", "last_name", "email")
     ordering = ("email",)
-    inlines = (
-        OrderHistoryInline,
-        BonusHistory,
-    )
+    inlines = (BonusHistory,)
 
 
 @admin.register(TourRequest)
 class TourRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "phone", "first_name", "last_name")
+    list_display = ("id", "user", "status", "phone", "first_name", "last_name")
+    list_editable = ("status",)
+    list_filter = ("status",)
     list_display_links = ("id", "user")
     search_fields = ("email", "phone", "first_name", "last_name", "inn")
-    
-    
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "user",
+                    "first_name",
+                    "last_name",
+                    "phone",
+                    "email",
+                    "gender",
+                    "citizenship",
+                    "inn",
+                )
+            },
+        ),
+        (
+            _("Информация о туре"),
+            {
+                "fields": (
+                    "operatorlink",
+                    "tourid",
+                )
+            },
+        ),
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "phone",
+                    "first_name",
+                    "last_name",
+                    "password1",
+                    "password2",
+                ),
+            },
+        ),
+    )
+
+
 @admin.register(Payments)
 class PaymentsAdmin(admin.ModelAdmin):
-    list_display = ("id", "full_name", "bank_name")
-    list_display_links = ("id", "full_name")
+    model = Payments
+    list_display = ("id", "bank_name")
+    list_display_links = list_display
+    formfield_overrides = {
+        models.TextField: {'widget': CKEditorWidget()}
+    }

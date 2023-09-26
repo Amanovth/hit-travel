@@ -16,7 +16,7 @@ class PaymentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payments
-        fields = ['img', 'full_name', "bank_name", "icon"]
+        fields = ['img', 'description', "bank_name", "icon"]
 
     def get_img(self, obj):
         if obj.img:
@@ -205,9 +205,9 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             return obj.last_login.strftime("%Y/%m/%d %H:%M")
 
 
-class OrderHistoryToursSerializer(serializers.ModelSerializer):
+class MyTourSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OrderHistory
+        model = TourRequest
         fields = "__all__"
 
 
@@ -232,4 +232,5 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "citizenship",
             "inn",
             "tourid",
+            "operatorlink"
         ]

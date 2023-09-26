@@ -22,7 +22,6 @@ class PaymentsAPIView(views.APIView):
         payments = Payments.objects.all()
         serializer = PaymentsSerializer(payments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -49,7 +48,7 @@ class RegisterAPIView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
 
-        if User.objects.filter(email=request.data['email']).exists():
+        if User.objects.filter(email=request.data["email"]).exists():
             return Response(
                 {
                     "response": False,
@@ -108,7 +107,7 @@ class RegisterAPIView(generics.CreateAPIView):
                 user.tourist_id = int(data["u_id"])
                 user.manager_id = int(data["manager_id"])
                 user.save()
-            
+
             # Create bonus card
             b_card = bonus_card_create(user)
             if b_card:
@@ -254,7 +253,7 @@ class LoginAPIView(ObtainAuthToken):
                     "email": user.email,
                 }
             )
-        return Response({"response": False, "message": _("Вы не верифицированы")})
+        return Response({"response": False, "message": _("Потвердите адрес электронной почты")})
 
 
 class LogoutAPIView(views.APIView):
@@ -312,7 +311,7 @@ class PasswordResetRequestAPIView(views.APIView):
                             "message": _("Ссылка для сброса пароля успешно отправлена"),
                         }
                     )
-                return Response({"resonse": True, "message": _("Вы не верифицированы")})
+                return Response({"resonse": True, "message": _("Потвердите адрес электронной почты")})
 
             except ObjectDoesNotExist:
                 return Response(
@@ -391,41 +390,6 @@ class SetNewPasswordAPIView(generics.UpdateAPIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
-class OrderHistoryView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        authlogin = settings.AUTHLOGIN
-        authpass = settings.AUTHPASS
-
-        queryset = OrderHistory.objects.filter(user=request.user)
-        serializer = OrderHistoryToursSerializer(queryset, many=True)
-        response = []
-
-        for i in serializer.data:
-            detail = requests.get(
-                f"http://tourvisor.ru/xml/actualize.php?tourid={i['tourid']}&request=0"
-                f"&format=json&authpass={authpass}&authlogin={authlogin}"
-            )
-            detail.raise_for_status()
-            flights = requests.get(
-                f"http://tourvisor.ru/xml/actdetail.php?tourid={i['tourid']}"
-                f"&format=json&authpass={authpass}&authlogin={authlogin}"
-            )
-            flights.raise_for_status()
-
-            d = {}
-            d["tourid"] = i["tourid"]
-            d["tour"] = detail.json()["data"]["tour"]
-            try:
-                d["flights"] = flights.json()["flights"]
-            except KeyError:
-                d["flights"] = flights.json()
-            response.append(d)
-
-        return Response(response)
-    
 
 class GetUserView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]

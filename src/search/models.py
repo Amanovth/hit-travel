@@ -10,8 +10,21 @@ class Favorites(models.Model):
         on_delete=models.CASCADE,
         related_name="user",
     )
-    date = models.DateTimeField(_('Дата'), auto_now_add=True)
+    date = models.DateTimeField(_("Дата"), auto_now_add=True)
     tourid = models.CharField(_("Код тура"), max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.user.email
+
+
+class Currency(models.Model):
+    currency = models.CharField(_("Валюта"), max_length=20)
+    purchase = models.DecimalField(_("Покупка"), max_digits=10, decimal_places=2)
+    sell = models.DecimalField(_("Продажа"), max_digits=10, decimal_places=2)
+    
+    def __str__(self) -> str:
+        return self.name
+    
+    class Meta:
+        verbose_name = _("Курс")
+        verbose_name_plural = _("Курсы")

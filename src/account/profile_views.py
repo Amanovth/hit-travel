@@ -1,17 +1,21 @@
 import os
 import shutil
+import requests
 from rest_framework import generics, permissions, views, status
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.shortcuts import get_list_or_404
 from .serializers import *
 
 
 class UpdateProfilePhotoAPIView(views.APIView):
     queryset = User.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
-        serializer = UpdateProfilePhotoSerializer(instance=request.user, data=request.data)
+        serializer = UpdateProfilePhotoSerializer(
+            instance=request.user, data=request.data
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"response": True, "message": "Успешно обновлено"})
@@ -79,3 +83,33 @@ class DeleteProfileView(generics.DestroyAPIView):
         user = request.user
         user.delete()
         return Response({"response": True, "message": "Пользователь успешно удален"})
+
+
+class MyTourAPIVIew(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+
+        queryset = TourRequest.objects.filter(user=request.user)
+        serializer = TourRequestSerializer(queryset, many=True)
+        response = []
+
+        for i in serializer.data:
+            tourid = i['tourid']
+            status = TourRequest.objects.get(tourid=tourid, user=request.user)
+            detail = requests.get(
+                f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
+
+            if detail.status_code != 200:
+                continue
+            d = {}
+            d["tourid"] = tourid
+            d["status"] = status.status
+            d["tour"] = detail.json()["data"]["tour"]
+            response.append(d)
+
+        return Response(response)

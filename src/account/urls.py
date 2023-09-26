@@ -21,11 +21,7 @@ urlpatterns = [
     path('profile/personal', ProfileInfoAPIView.as_view(), name='Profile information'),
     path('profile/update-info', UpdateInfoView.as_view(), name='update-info'),
     path('profile/delete', DeleteProfileView.as_view(), name='delete-profile'),
-    # path('get-user', GetUserView.as_view(), name='get-user'),
-    
-    # History
-    path('history/orders', OrderHistoryView.as_view(), name='order-history'),
-    
+    path('profile/my-tour', MyTourAPIVIew.as_view(), name='my-tour'),
     
     # Request
     path('tour/request', TourRequestView.as_view(), name='tour-request'),

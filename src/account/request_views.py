@@ -2,7 +2,7 @@ from datetime import datetime
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
-from .models import TourRequest, OrderHistory
+from .models import TourRequest
 from .serializers import TourRequestSerializer
 from .services import create_lead
 
@@ -17,21 +17,19 @@ class TourRequestView(generics.CreateAPIView):
         user = request.user
         
         if serializer.is_valid():
+            tour_id = serializer.validated_data.get('tourid')
+            existing_tour_request = TourRequest.objects.filter(tourid=tour_id, user=user)
+            
+            if existing_tour_request.exists():
+                # Удалить существующий TourRequest с тем же tourid.
+                existing_tour_request.delete()
+            
             serializer.save(user=request.user)
-            
-            order_history, created = OrderHistory.objects.get_or_create(
-                user=user,
-                tourid=serializer.data['tourid'],
-            )
-            
-            if created:
-                message = "Успешно оформлено"
-            else:
-                message = "Успешно оформлено, история заказов уже существует."
 
             res = create_lead(serializer.data, user)
             detail = False
             if res:
                 detail = True
             
-            return Response({"response": True, "message": message, "detail": detail})
+            return Response({"response": True, "detail": detail, "message": "Заявка успешно отправлено"})
+        return Response(serializer.errors)

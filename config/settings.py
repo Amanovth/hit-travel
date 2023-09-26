@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "drf_yasg",
+    "ckeditor",
+    "ckeditor_uploader",
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
@@ -124,12 +126,9 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
-# CORS_ORIGIN_ALLOW_ALL = True
-# ALLOWED_HOSTS = ['*']
-
-# CORS_ALLOWED_ORIGINS = [
-#     "*",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    # "*",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://hit-travel.org",
@@ -165,3 +164,13 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 AUTHLOGIN = os.getenv("AUTHLOGIN")
 AUTHPASS = os.getenv("AUTHPASS")
 KEY = os.getenv("KEY")
+
+CKEDITOR_BASEPATH = "/home/chyngyz/hit-travel/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        "height": 200,
+        "width": "full",
+    },
+}
