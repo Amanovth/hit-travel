@@ -19,7 +19,7 @@ def bonus_card_create(user):
     # Create
     data_1 = {
         # "number": int(f"{user_id:<06d}"),
-        "number": int(user_id),
+        "number": f"{user_id:<06d}",
         "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "user_id": int(user.tourist_id),
         # "manager_id": manager_id,
@@ -41,9 +41,16 @@ def create_lead(data, user):
 
     # Примечание
     note = (
-        f"{data['first_name']} {data['last_name']}\n"
-        f"{data['phone']}\n"
-        f"{data['email']}\n"
+        f"{data['first_name']} {data['last_name']}, {data['gender']}\n"
+        f"Гражданство: {data['citizenship']}\n"
+        f"Телефон: {data['phone']}\n"
+        f"Email: {data['email']}\n"
+        f"ИНН: {data['inn']}\n"
+        f"ID пасспорта: {data['passport_id']}\n"
+        f"Страна: {data['country']}\n"
+        f"Город: {data['city']}\n"
+        f"Бонусы: {data['bonuses']}\n"
+        f"Количество путешественников: {len(data['travelers'])}\n" 
         f"Оператор: {data['operatorlink']}"
     )
 

@@ -11,6 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
+from django.contrib.auth import authenticate
 
 from ..base.utils import Util
 from .serializers import *
@@ -227,33 +228,89 @@ class SendAgainCodeAPIView(generics.GenericAPIView):
         )
 
 
-class LoginAPIView(ObtainAuthToken):
-    serializer_class = LoginSerializer
+class LoginAPIView(views.APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-        try:
-            user = serializer.validated_data["user"]
-        except KeyError:
+        if serializer.is_valid():
+            email = request.data.get("email")
+            password = request.data.get("password")
+
+            try:
+                get_user = User.objects.get(email=email)
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "response": False,
+                        "message": "Пользователь с указанными учетными данными не существует",
+                    }
+                )
+
+            user = authenticate(request, email=email, password=password)
+
+            if not user:
+                return Response(
+                    {
+                        "response": False,
+                        "message": "Невозможно войти в систему с указанными учетными данными",
+                    }
+                )
+
+            if user.is_verified:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response(
+                    {
+                        "response": True,
+                        "isactivated": True,
+                        "token": token.key,
+                        "email": user.email,
+                    }
+                )
             return Response(
                 {
-                    "resonse": False,
-                    "message": "Невозможно войти в систему с указанными учетными данными",
+                    "response": False,
+                    "message": _("Потвердите адрес электронной почты"),
+                    "isactivated": False,
                 }
             )
-        if user.is_verified:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response(
-                {
-                    "response": True,
-                    "token": token.key,
-                    "email": user.email,
-                }
-            )
-        return Response({"response": False, "message": _("Потвердите адрес электронной почты")})
+        
+        return Response(serializer.errors)
+
+    # serializer_class = LoginSerializer
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = self.serializer_class(
+    #         data=request.data, context={"request": request}
+    #     )
+    #     if serializer.is_valid():
+    #         try:
+    #             user = serializer.validated_data["user"]
+    #             email = serializer.validated_data["email"]
+    #         except KeyError:
+    #             return Response(
+    #                 {
+    #                     "resonse": False,
+    #                     "message": "Невозможно войти в систему с указанными учетными данными",
+    #                 }
+    #             )
+    #         if user.is_verified:
+    #             token, created = Token.objects.get_or_create(user=user)
+    #             return Response(
+    #                 {
+    #                     "response": True,
+    #                     "isactivated": True,
+    #                     "token": token.key,
+    #                     "email": user.email,
+    #                 }
+    #             )
+    #         return Response(
+    #             {
+    #                 "response": False,
+    #                 "message": _("Потвердите адрес электронной почты"),
+    #                 "isactivated": False,
+    #             }
+    #         )
+    #     return Response(serializer.errors)
 
 
 class LogoutAPIView(views.APIView):
@@ -289,9 +346,7 @@ class PasswordResetRequestAPIView(views.APIView):
                     user.password_reset_token = token
                     user.save()
 
-                    reset_url = (
-                        f"http://77.232.128.174:8000/auth/password-reset/{token}"
-                    )
+                    reset_url = f"https://hit-travel.org/auth/password-reset/{token}"
 
                     email_body = (
                         f"Для сброса пароля используйте ссылку ниже:\n\n" f"{reset_url}"
@@ -311,16 +366,18 @@ class PasswordResetRequestAPIView(views.APIView):
                             "message": _("Ссылка для сброса пароля успешно отправлена"),
                         }
                     )
-                return Response({"resonse": True, "message": _("Потвердите адрес электронной почты")})
+                return Response(
+                    {
+                        "resonse": True,
+                        "message": _("Потвердите адрес электронной почты"),
+                    }
+                )
 
             except ObjectDoesNotExist:
                 return Response(
                     {"message": _("Пользователь с таким адресом email не существует")},
                 )
-        return Response(
-            {"response": False, "detail": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return Response(serializer.errors)
 
 
 class PasswordResetUpdateAPIView(views.APIView):
@@ -360,10 +417,10 @@ class PasswordResetUpdateAPIView(views.APIView):
             return Response({"respons": False, "message": _("Неверный токен")})
 
 
-class SetNewPasswordAPIView(generics.UpdateAPIView):
+class SetNewPasswordAPIView(views.APIView):
     serializer_class = SetNewPasswordSerializer
 
-    def update(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             old_password = serializer.validated_data["old_password"]
@@ -382,13 +439,18 @@ class SetNewPasswordAPIView(generics.UpdateAPIView):
                     {"response": False, "message": _("Старый пароль неверен!")}
                 )
 
+            if not check_password(new_password, user.password):
+                return Response(
+                    {
+                        "response": False,
+                        "message": _("Новый пароль не может быть похожим на старый"),
+                    }
+                )
+
             user.set_password(new_password)
             user.save()
             return Response({"response": True, "message": _("Пароль успешно обновлен")})
-        return Response(
-            {"response": False, "detail": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return Response(serializer.errors)
 
 
 class GetUserView(views.APIView):

@@ -4,8 +4,8 @@ import requests
 from rest_framework import generics, permissions, views, status
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from django.shortcuts import get_list_or_404
 from .serializers import *
+from src.base.services import get_isfavorite
 
 
 class UpdateProfilePhotoAPIView(views.APIView):
@@ -76,10 +76,10 @@ class UpdateInfoView(views.APIView):
         return Response({"response": False})
 
 
-class DeleteProfileView(generics.DestroyAPIView):
+class DeleteProfileView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def delete(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user = request.user
         user.delete()
         return Response({"response": True, "message": "Пользователь успешно удален"})
@@ -91,13 +91,14 @@ class MyTourAPIVIew(views.APIView):
     def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
+        user = request.user
 
         queryset = TourRequest.objects.filter(user=request.user)
         serializer = TourRequestSerializer(queryset, many=True)
         response = []
 
         for i in serializer.data:
-            tourid = i['tourid']
+            tourid = i["tourid"]
             status = TourRequest.objects.get(tourid=tourid, user=request.user)
             detail = requests.get(
                 f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
@@ -106,10 +107,14 @@ class MyTourAPIVIew(views.APIView):
 
             if detail.status_code != 200:
                 continue
-            d = {}
-            d["tourid"] = tourid
-            d["status"] = status.status
-            d["tour"] = detail.json()["data"]["tour"]
-            response.append(d)
+            try:
+                d = {}
+                d["tourid"] = tourid
+                d["status"] = status.status
+                d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
+                d["tour"] = detail.json()["data"]["tour"]
+                response.append(d)
+            except KeyError:
+                continue
 
         return Response(response)

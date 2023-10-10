@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import Favorites
+from .models import Currency
 from src.base.services import get_isfavorite
 
 
@@ -35,15 +35,75 @@ class SearchView(APIView):
             return Response({"response": False})
 
     def get(self, request):
-        requestid = self.get_search_result(request.query_params)
+        query_params = request.query_params
 
-        time.sleep(6)
-        url = (
-            f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
-            f"&authlogin={self.authlogin}&authpass={self.authpass}"
-        )
+        currency = query_params.get("currency")
 
-        response = requests.get(url)
+        # Если юзер выбрал СОМ
+        if currency == "99":
+            mutable_query_params = query_params.copy()
+            usd_exchange = Currency.objects.get(currency="USD").purchase
+            eur_exchange = Currency.objects.get(currency="EUR").purchase
+
+            pricefrom = int(query_params.get("pricefrom"))
+            priceto = int(query_params.get("priceto"))
+
+            mutable_query_params["pricefrom"] = pricefrom / usd_exchange
+            mutable_query_params["priceto"] = priceto / usd_exchange
+            mutable_query_params["currency"] = "1"
+
+            requestid = self.get_search_result(mutable_query_params)
+
+            time.sleep(6)
+
+            url = (
+                f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
+                f"&authlogin={self.authlogin}&authpass={self.authpass}"
+            )
+
+            response = requests.get(url)
+            if response.status_code != 200:
+                return Response({"response": False})
+
+            data = response.json()
+            for hotel in data["data"]["result"]["hotel"]:
+                if hotel["currency"] == "USD":
+                    hotel["currency"] = hotel["currency"] = "KGS"
+                    hotel["price"] = int(hotel["price"] * usd_exchange)
+
+                    for tour in hotel["tours"]["tour"]:
+                        if tour["currency"] == "USD":
+                            tour["currency"] = "KGS"
+                            tour["price"] = int(tour["price"] * usd_exchange)
+                        else:
+                            tour["currency"] = "KGS"
+                            tour["price"] = int(tour["price"] * eur_exchange)
+
+                elif hotel["currency"] == "EUR":
+                    hotel["currency"] = hotel["currency"] = "KGS"
+                    hotel["price"] = int(hotel["price"] * eur_exchange)
+
+                    for tour in hotel["tours"]["tour"]:
+                        if tour["currency"] == "USD":
+                            tour["currency"] = "KGS"
+                            tour["price"] = int(tour["price"] * usd_exchange)
+                        else:
+                            tour["currency"] = "KGS"
+                            tour["price"] = int(tour["price"] * eur_exchange)
+
+            return Response(data)
+
+        else:
+            requestid = self.get_search_result(query_params)
+
+            time.sleep(6)
+
+            url = (
+                f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
+                f"&authlogin={self.authlogin}&authpass={self.authpass}"
+            )
+
+            response = requests.get(url)
 
         if response.status_code != 200:
             return Response({"response": False})
@@ -57,7 +117,7 @@ class FilterParams(APIView):
 
         options = requests.get(
             f"http://tourvisor.ru/xml/listdev.php?type="
-            f"hotel,country,departure,region,subregion,meal,stars,operator,currency"
+            f"hotel,country,departure,region,subregion,meal,stars,operator"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
         options_data = options.json()
@@ -65,22 +125,22 @@ class FilterParams(APIView):
         services_operators = requests.get(
             f"http://tourvisor.ru/xml/list.php?authlogin={authlogin}&authpass={authpass}"
             f"&format=json&type=services,operator"
-        ).json()['lists']
-        
+        ).json()["lists"]
+
         if options.status_code != 200:
             return Response({"response": False})
-            
-        options_data['lists']['services'] = services_operators['services']
-        options_data['lists']['operators'] = services_operators['operators']
-            
+
+        options_data["lists"]["services"] = services_operators["services"]
+        options_data["lists"]["operators"] = services_operators["operators"]
+
         return Response(options_data)
-    
+
 
 class FilterHotels(APIView):
     def get(self, request, hotcountry):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
-        
+
         hotels = requests.get(
             f"http://tourvisor.ru/xml/listdev.php?type=hotel&format=json&hotcountry={hotcountry}"
             f"&authpass={authpass}&authlogin={authlogin}&hotactive=1"
@@ -91,6 +151,11 @@ class FilterHotels(APIView):
 
 
 class FilterCountries(APIView):
+    def update_country_name(self, country):
+        if country.get("name") == "Киргизия":
+            country["name"] = "Кыргызстан"
+        return country
+    
     def get(self, request, departureid):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
@@ -101,7 +166,30 @@ class FilterCountries(APIView):
         )
         if countries.status_code != 200:
             return Response({"response": False})
-        return Response(countries.json())
+        
+        countries = countries.json()
+        
+        for i in countries["lists"]["countries"]["country"]:
+            if i["name"] == "Киргизия":
+                i["name"] = "Кыргызстан"
+                break
+        
+        return Response(countries)
+    
+
+class RegCountryView(APIView):
+    def get(self, request, regcountry):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+        
+        regions = requests.get(
+            f"http://tourvisor.ru/xml/list.php?type=region,subregion&regcountry={regcountry}"
+            f"&authlogin={authlogin}&authpass={authpass}"
+        )
+        
+        if regions.status_code != 200:
+            return Response({"response": False})
+        return Response(regions.json())
 
 
 class TourActualizeView(APIView):
@@ -165,7 +253,7 @@ class HotToursListView(APIView):
 
 class TourDetailView(APIView):
     # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
+
     def get(self, request, tourid):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
@@ -205,12 +293,12 @@ class TourDetailView(APIView):
             flights = flights.json()["flights"]
         except KeyError:
             flights = flights.json()
-            
+
         if user.is_anonymous:
             isfavorite = False
         else:
             isfavorite = get_isfavorite(user=user, tourid=tourid)
-        
+
         return Response(
             {
                 "isfavorite": isfavorite,
@@ -225,12 +313,12 @@ class RecommendationsView(APIView):
     def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
-        
+
         recommendations = requests.get(
             f"http://tourvisor.ru/xml/hottours.php?picturetype=1&items=30"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
-        
+
         if recommendations.status_code != 200:
             return Response({"response": False})
         return Response(recommendations.json())

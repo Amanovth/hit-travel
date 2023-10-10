@@ -44,12 +44,11 @@ class FavoriteToursListView(views.APIView):
                 f"http://tourvisor.ru/xml/actualize.php?tourid={i['tourid']}"
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"
             )
-            detail.raise_for_status()
+
             flights = requests.get(
                 f"http://tourvisor.ru/xml/actdetail.php?tourid={i['tourid']}"
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"
             )
-            flights.raise_for_status()
             
             d = {}
             try:

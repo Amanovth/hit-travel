@@ -19,6 +19,7 @@ httpx==0.24.1
 idna==3.4
 inflection==0.5.1
 packaging==23.1
+pdfkit==1.0.0
 Pillow==10.0.0
 psycopg2-binary==2.9.7
 pycodestyle==2.11.0

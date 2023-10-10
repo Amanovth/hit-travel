@@ -82,13 +82,19 @@ class UserAdmin(UserAdmin):
     inlines = (BonusHistory,)
 
 
+class TravelersInline(admin.StackedInline):
+    model = Travelers
+    extra = 0
+
+
 @admin.register(TourRequest)
 class TourRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "status", "phone", "first_name", "last_name")
+    list_display = ("id", "user", "status", "phone", "first_name", "last_name", "tourid",)
     list_editable = ("status",)
     list_filter = ("status",)
     list_display_links = ("id", "user")
     search_fields = ("email", "phone", "first_name", "last_name", "inn")
+    inlines = (TravelersInline,)
 
     fieldsets = (
         (
@@ -103,6 +109,10 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "gender",
                     "citizenship",
                     "inn",
+                    "city",
+                    "country",
+                    "passport_id",
+                    "bonuses"
                 )
             },
         ),

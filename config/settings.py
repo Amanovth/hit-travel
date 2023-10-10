@@ -165,12 +165,13 @@ AUTHLOGIN = os.getenv("AUTHLOGIN")
 AUTHPASS = os.getenv("AUTHPASS")
 KEY = os.getenv("KEY")
 
-CKEDITOR_BASEPATH = "/home/chyngyz/hit-travel/static/ckeditor/ckeditor/"
-CKEDITOR_UPLOAD_PATH = "uploads/"
-
 CKEDITOR_CONFIGS = {
     "default": {
         "height": 200,
         "width": "full",
     },
 }
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+USE_DJANGO_JQUERY = True

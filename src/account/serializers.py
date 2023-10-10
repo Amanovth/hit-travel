@@ -16,13 +16,13 @@ class PaymentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payments
-        fields = ['img', 'description', "bank_name", "icon"]
+        fields = ["img", "description", "bank_name", "icon"]
 
     def get_img(self, obj):
         if obj.img:
             return f"https://hit-travel.org/media/{obj.img}"
         return None
-    
+
     def get_icon(self, obj):
         if obj.icon:
             return f"https://hit-travel.org/media/{obj.icon}"
@@ -30,7 +30,11 @@ class PaymentsSerializer(serializers.ModelSerializer):
 
 
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(required=True, max_length=68, min_length=8)
+    confirm_password = serializers.CharField(
+        required=True,
+        min_length=8,
+        error_messages={"min_length": "Не менее 8 символов."},
+    )
 
     class Meta:
         model = User
@@ -42,19 +46,6 @@ class RegisterAPIViewSerializer(serializers.ModelSerializer):
             "password",
             "confirm_password",
         ]
-
-    def validate(self, attrs):
-        email = attrs.get("email")
-
-        if User.objects.filter(email=email).exists():
-            return Response(
-                {
-                    "response": False,
-                    "message": _("Пользователь с таким email уже существует."),
-                }
-            )
-
-        return attrs
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -74,38 +65,54 @@ class SendAgainCodeSerializer(serializers.Serializer):
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        label=_("Email"), style={"input_type": "email"}, write_only=True
+        write_only=True,
+        required=True,
     )
     password = serializers.CharField(
-        label=_("Password"),
-        style={"input_type": "password"},
-        trim_whitespace=False,
         write_only=True,
+        min_length=8,
+        required=True,
+        error_messages={"min_length": "Не менее 8 символов."},
     )
-    token = serializers.CharField(label=_("Token"), read_only=True)
+    token = serializers.CharField(read_only=True)
+    # email = serializers.EmailField(
+    #     label=_("Email"), style={"input_type": "email"}, write_only=True
+    # )
+    # password = serializers.CharField(
+    #     label=_("Password"),
+    #     style={"input_type": "password"},
+    #     trim_whitespace=False,
+    #     write_only=True,
+    #     required=True,
+    #     min_length=8,
+    #     error_messages={
+    #         'min_length': 'Не менее 8 символов.'
+    #     }
+    # )
+    # token = serializers.CharField(label=_("Token"), read_only=True)
 
-    def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+    # def validate(self, attrs):
+    #     email = attrs.get("email")
+    #     password = attrs.get("password")
 
-        if email and password:
-            user = authenticate(
-                request=self.context.get("request"), username=email, password=password
-            )
+    #     if email and password:
+    #         user = authenticate(
+    #             request=self.context.get("request"), username=email, password=password
+    #         )
 
-            if not user:
-                return Response(
-                    {
-                        "response": False,
-                        "message": "Невозможно войти в систему с указанными учетными даннымиpDvT#uJwi4+LNU",
-                    }
-                )
-        else:
-            msg = _("Должен включать имя пользователя и пароль")
-            raise serializers.ValidationError(msg, code="authorization")
+    #         if not user:
+    #             return Response(
+    #                 {
+    #                     "response": False,
+    #                     "message": "Невозможно войти в систему с указанными учетными данными",
+    #                 }
+    #             )
+    #     else:
+    #         msg = _("Должен включать имя пользователя и пароль")
+    #         raise serializers.ValidationError(msg, code="authorization")
 
-        attrs["user"] = user
-        return attrs
+    #     attrs["user"] = user
+    #     return attrs
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -220,7 +227,15 @@ class UpdateInfoSerializer(serializers.ModelSerializer):
         fields = ["first_name", "last_name"]
 
 
+class TravelerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Travelers
+        fields = ["first_name", "last_name", "dateofborn", "gender"]
+
+
 class TourRequestSerializer(serializers.ModelSerializer):
+    travelers = TravelerSerializer(many=True)
+
     class Meta:
         model = TourRequest
         fields = [
@@ -232,5 +247,20 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "citizenship",
             "inn",
             "tourid",
-            "operatorlink"
+            "operatorlink",
+            "travelers",
+            "city",
+            "country",
+            "passport_id",
+            "bonuses",
         ]
+
+    def create(self, validated_data):
+        try:
+            travelers_list = validated_data.pop("travelers")
+            instance = TourRequest.objects.create(**validated_data)
+            for traveler in travelers_list:
+                instance.travelers.create(**traveler)
+            return instance
+        except KeyError:
+            return super().create(validated_data)

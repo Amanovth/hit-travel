@@ -40,8 +40,10 @@ class User(AbstractUser):
     balance = models.DecimalField(_('Balance'), default=0, max_digits=10, decimal_places=2)
     bonuses = models.DecimalField(_('Bonuses'), default=0, max_digits=10, decimal_places=2)
     email = models.EmailField(_('Email'), unique=True)
+    first_name = models.CharField(_("first name"), max_length=150)
+    last_name = models.CharField(_("last name"), max_length=150)
     is_verified = models.BooleanField(_('Verification'), default=False)
-    phone = models.CharField(verbose_name=_('Phone'), max_length=12, null=True, blank=True)
+    phone = models.CharField(verbose_name=_('Phone'), max_length=12)
     verification_code = models.IntegerField(_('Verification code'), null=True, blank=True)
     verification_code_time = models.DateTimeField(_('Verification code created time'), null=True, blank=True)
     password_reset_token = models.CharField(_('Password Reset'), max_length=100, blank=True, null=True, unique=True)
@@ -114,9 +116,18 @@ class TourRequest(models.Model):
     gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
     citizenship = models.CharField(_("Гражданство"), max_length=100)
     inn = models.CharField(_("ИНН"), max_length=100)
+    city = models.CharField(_("Город"), max_length=255)
+    country = models.CharField(_("Страна"), max_length=255)
+    passport_id = models.CharField(_("ID пасспорта"), max_length=255)
+    # request_number = models.IntegerField(_("Внутренний номер заявки"), null=True, blank=True)
+    # passport_front = models.ImageField(_("Фото паспорта передняя сторона"), 
+    #                                    upload_to="passports", null=True, blank=True)
+    # passport_back = models.ImageField(_("Фото паспорта задняя сторона"), 
+    #                                   upload_to="passports",null=True, blank=True)
     
     operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000)
     tourid = models.CharField(_("Код тура"), max_length=100)
+    bonuses = models.DecimalField(_("Бонусы"), default=0, max_digits=10, decimal_places=2)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -125,6 +136,26 @@ class TourRequest(models.Model):
         verbose_name = _("Заявка")
         verbose_name_plural = _("Заявки")
     
+    
+class Travelers(models.Model):
+    GENDER_CHOICES = (
+        ("Муж", "Муж"),
+        ("Жен", "Жен")
+    )
+    
+    main = models.ForeignKey(TourRequest, on_delete=models.CASCADE, related_name='travelers')
+    dateofborn = models.DateField(_("Дата рождения"))
+    first_name = models.CharField(_("Имя"), max_length=100)
+    last_name = models.CharField(_("Фамилия"), max_length=100)
+    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
+        
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name = _("Путешественник")
+        verbose_name_plural = _("Путешественники")
+
     
 class Payments(models.Model):
     img = models.ImageField(_("QRCode"), upload_to='payments')
