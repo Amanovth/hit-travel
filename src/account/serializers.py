@@ -1,8 +1,11 @@
 import locale
+import requests
+from decimal import Decimal
 from rest_framework import serializers
 from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
+from django.conf import settings
 
 from .models import *
 
@@ -181,6 +184,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
     date_joined = serializers.SerializerMethodField()
     last_login = serializers.SerializerMethodField()
     bonus_history = BonusHistorySerializer(many=True)
+    bonuses = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -197,6 +201,17 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "bonus_history",
         ]
 
+    def get_bonuses(self, obj):
+        if obj.tourist_id:
+            bonuses = requests.get(f"https://api.u-on.ru/{settings.KEY}/user/{obj.tourist_id}.json")
+        
+            if bonuses.status_code != 200:
+                return None
+
+            return '{:.2f}'.format(bonuses.json()["user"][0]["bcard_value"])
+        return None
+            
+    
     def get_photo(self, obj):
         if obj.photo:
             request = self.context.get("request")

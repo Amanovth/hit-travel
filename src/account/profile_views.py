@@ -1,7 +1,7 @@
 import os
 import shutil
 import requests
-from rest_framework import generics, permissions, views, status
+from rest_framework import permissions, views, status
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from .serializers import *
@@ -61,6 +61,7 @@ class ProfileInfoAPIView(views.APIView):
             )
 
         serializer = PersonalInfoSerializer(user, context={"request": request})
+
         return Response({"response": True, "data": serializer.data})
 
 

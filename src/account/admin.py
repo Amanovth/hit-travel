@@ -23,6 +23,8 @@ class UserAdmin(UserAdmin):
                     "manager_id",
                     "balance",
                     "bonuses",
+                    # "bcard_number",
+                    "bcard_id",
                 )
             },
         ),
@@ -78,7 +80,7 @@ class UserAdmin(UserAdmin):
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
     search_fields = ("first_name", "last_name", "email")
-    ordering = ("email",)
+    ordering = ("id",)
     inlines = (BonusHistory,)
 
 
@@ -89,7 +91,15 @@ class TravelersInline(admin.StackedInline):
 
 @admin.register(TourRequest)
 class TourRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "status", "phone", "first_name", "last_name", "tourid",)
+    list_display = (
+        "id",
+        "user",
+        "status",
+        "phone",
+        "first_name",
+        "last_name",
+        "tourid",
+    )
     list_editable = ("status",)
     list_filter = ("status",)
     list_display_links = ("id", "user")
@@ -112,7 +122,7 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "city",
                     "country",
                     "passport_id",
-                    "bonuses"
+                    "bonuses",
                 )
             },
         ),
@@ -149,6 +159,4 @@ class PaymentsAdmin(admin.ModelAdmin):
     model = Payments
     list_display = ("id", "bank_name")
     list_display_links = list_display
-    formfield_overrides = {
-        models.TextField: {'widget': CKEditorWidget()}
-    }
+    formfield_overrides = {models.TextField: {"widget": CKEditorWidget()}}

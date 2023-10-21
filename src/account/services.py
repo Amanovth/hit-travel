@@ -18,18 +18,19 @@ def bonus_card_create(user):
 
     # Create
     data_1 = {
-        # "number": int(f"{user_id:<06d}"),
-        "number": f"{user_id:<06d}",
-        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "number": f"{user.bcard_number}000",
         "user_id": int(user.tourist_id),
         # "manager_id": manager_id,
     }
 
     url_1 = f"https://api.u-on.ru/{KEY}/bcard/create.json"
     res_1 = requests.post(url_1, data=data_1)
+    bcard_id = res_1.json()["id"]
+    user.bcard_id = bcard_id
+    user.save()
 
     # Activate
-    data_2 = {"bc_number": int(user_id), "user_id": int(user.tourist_id)}
+    data_2 = {"bc_number": f"{user.bcard_number}000", "user_id": int(user.tourist_id)}
 
     url_2 = f"https://api.u-on.ru/{KEY}/bcard-activate/create.json"
     res_2 = requests.post(url_2, data_2)
@@ -50,7 +51,7 @@ def create_lead(data, user):
         f"Страна: {data['country']}\n"
         f"Город: {data['city']}\n"
         f"Бонусы: {data['bonuses']}\n"
-        f"Количество путешественников: {len(data['travelers'])}\n" 
+        f"Количество путешественников: {len(data['travelers'])}\n"
         f"Оператор: {data['operatorlink']}"
     )
 

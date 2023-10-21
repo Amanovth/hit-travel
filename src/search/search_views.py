@@ -117,7 +117,7 @@ class FilterParams(APIView):
 
         options = requests.get(
             f"http://tourvisor.ru/xml/listdev.php?type="
-            f"hotel,country,departure,region,subregion,meal,stars,operator"
+            f"hotel,country,departure,meal,stars,operator"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
         options_data = options.json()
