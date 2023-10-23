@@ -22,11 +22,17 @@ urlpatterns = [
     path("profile/update-info", UpdateInfoView.as_view(), name="update-info"),
     path("profile/delete", DeleteProfileView.as_view(), name="delete-profile"),
     path("profile/my-tour", MyTourAPIVIew.as_view(), name="my-tour"),
+    path("profile/agreement-pdf/<int:tourrequest_id>", CreateAgreementPDF.as_view(), name="agreement-pdf"),
     
     # Request
     path("tour/request", TourRequestView.as_view(), name="tour-request"),
-    # path("profile/generate-pdf". generate_pdf, name="generate-pdf"),
     
     # Payments
-    path("payment/qrcode", PaymentsAPIView.as_view(), name="qrcode")
+    path("payment/qrcode", PaymentsAPIView.as_view(), name="qrcode"),
+    
+    # Bonuse
+    path("bonus/history", BonusHistoryAPIView.as_view(), name="bonus-history"),
+    
+    # FAQ
+    path("faq", FAQAPIView.as_view(), name="faq")
 ]

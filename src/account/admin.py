@@ -94,11 +94,13 @@ class TourRequestAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "request_number",
         "status",
         "phone",
         "first_name",
         "last_name",
         "tourid",
+        "created_at",
     )
     list_editable = ("status",)
     list_filter = ("status",)
@@ -111,6 +113,7 @@ class TourRequestAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "request_number",
                     "user",
                     "first_name",
                     "last_name",
@@ -128,12 +131,7 @@ class TourRequestAdmin(admin.ModelAdmin):
         ),
         (
             _("Информация о туре"),
-            {
-                "fields": (
-                    "operatorlink",
-                    "tourid",
-                )
-            },
+            {"fields": ("operatorlink", "tourid", "price", "currency")},
         ),
     )
     add_fieldsets = (
@@ -160,3 +158,9 @@ class PaymentsAdmin(admin.ModelAdmin):
     list_display = ("id", "bank_name")
     list_display_links = list_display
     formfield_overrides = {models.TextField: {"widget": CKEditorWidget()}}
+    
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ("id", "question",)
+    list_display_links = list_display

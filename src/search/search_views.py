@@ -116,7 +116,7 @@ class FilterParams(APIView):
         authpass = settings.AUTHPASS
 
         options = requests.get(
-            f"http://tourvisor.ru/xml/listdev.php?type="
+            f"http://tourvisor.ru/xml/list.php?type="
             f"hotel,country,departure,meal,stars,operator"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
@@ -137,14 +137,60 @@ class FilterParams(APIView):
 
 
 class FilterHotels(APIView):
-    def get(self, request, hotcountry):
+    def get(self, request):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
 
-        hotels = requests.get(
-            f"http://tourvisor.ru/xml/listdev.php?type=hotel&format=json&hotcountry={hotcountry}"
-            f"&authpass={authpass}&authlogin={authlogin}&hotactive=1"
-        )
+        hotcountry = request.query_params.get("hotcountry")
+        hotregion = request.query_params.get("hotregion")
+        hotstars = request.query_params.get("hotstars")
+        hotrating = request.query_params.get("hotrating")
+        hotactive = request.query_params.get("hotactive")
+        hotrelax = request.query_params.get("hotrelax")
+        hotfamily = request.query_params.get("hotfamily")
+        hothealth = request.query_params.get("hothealth")
+        hotcity = request.query_params.get("hotcity")
+        hotbeach = request.query_params.get("hotbeach")
+        hotdeluxe = request.query_params.get("hotdeluxe")
+
+        url = "http://tourvisor.ru/xml/list.php?type=hotel&format=json"
+        url += f"&authpass={authpass}&authlogin={authlogin}"
+
+        if hotcountry:
+            url += f"&hotcountry={hotcountry}"
+            
+        if hotregion:
+            url += f"&hotregion={hotregion}"
+
+        if hotstars:
+            url += f"&hotstars={hotstars}"
+
+        if hotactive:
+            url += f"&hotactive={hotactive}"
+
+        if hotrating:
+            url += f"&hotrating={hotrating}"
+
+        if hotfamily:
+            url += f"&hotfamily={hotfamily}"
+
+        if hothealth:
+            url += f"&hothealth={hothealth}"
+
+        if hotcity:
+            url += f"&hotcity={hotcity}"
+
+        if hotbeach:
+            url += f"&hotbeach={hotbeach}"
+
+        if hotdeluxe:
+            url += f"&hotdeluxe={hotdeluxe}"
+        
+        if hotrelax:
+            url += f"&hotrelax={hotrelax}"
+
+        hotels = requests.get(url)
+
         if hotels.status_code != 200:
             return Response({"response": False})
         return Response(hotels.json())
@@ -155,38 +201,38 @@ class FilterCountries(APIView):
         if country.get("name") == "Киргизия":
             country["name"] = "Кыргызстан"
         return country
-    
+
     def get(self, request, departureid):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
 
         countries = requests.get(
-            f"http://tourvisor.ru/xml/listdev.php?type=country&cndep={departureid}"
+            f"http://tourvisor.ru/xml/list.php?type=country&cndep={departureid}"
             f"&format=json&authpass={authpass}&authlogin={authlogin}"
         )
         if countries.status_code != 200:
             return Response({"response": False})
-        
+
         countries = countries.json()
-        
+
         for i in countries["lists"]["countries"]["country"]:
             if i["name"] == "Киргизия":
                 i["name"] = "Кыргызстан"
                 break
-        
+
         return Response(countries)
-    
+
 
 class RegCountryView(APIView):
     def get(self, request, regcountry):
         authlogin = settings.AUTHLOGIN
         authpass = settings.AUTHPASS
-        
+
         regions = requests.get(
             f"http://tourvisor.ru/xml/list.php?type=region,subregion&regcountry={regcountry}"
             f"&authlogin={authlogin}&authpass={authpass}"
         )
-        
+
         if regions.status_code != 200:
             return Response({"response": False})
         return Response(regions.json())
@@ -242,7 +288,7 @@ class HotToursListView(APIView):
         authpass = settings.AUTHPASS
 
         hottours = requests.get(
-            f"http://tourvisor.ru/xml/hottours.php?city=80&picturetype=1"
+            f"http://tourvisor.ru/xml/hottours.php?city=80&city2=60&items=20&picturetype=1"
             f"&format=json&authpass={authpass}&authlogin={authlogin}&reviews=1"
         )
 

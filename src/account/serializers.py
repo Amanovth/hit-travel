@@ -183,7 +183,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     date_joined = serializers.SerializerMethodField()
     last_login = serializers.SerializerMethodField()
-    bonus_history = BonusHistorySerializer(many=True)
+    # bonus_history = BonusHistorySerializer(many=True)
     bonuses = serializers.SerializerMethodField()
 
     class Meta:
@@ -198,7 +198,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "photo",
             "balance",
             "bonuses",
-            "bonus_history",
+            # "bonus_history",
         ]
 
     def get_bonuses(self, obj):
@@ -254,6 +254,7 @@ class TourRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourRequest
         fields = [
+            "id",
             "first_name",
             "last_name",
             "phone",
@@ -268,6 +269,8 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "country",
             "passport_id",
             "bonuses",
+            "price",
+            "currency"
         ]
 
     def create(self, validated_data):
@@ -279,3 +282,9 @@ class TourRequestSerializer(serializers.ModelSerializer):
             return instance
         except KeyError:
             return super().create(validated_data)
+
+
+class FAQListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = "__all__"

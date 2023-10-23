@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
@@ -125,18 +126,25 @@ class TourRequest(models.Model):
     city = models.CharField(_("Город"), max_length=255)
     country = models.CharField(_("Страна"), max_length=255)
     passport_id = models.CharField(_("ID пасспорта"), max_length=255)
-    # request_number = models.IntegerField(_("Внутренний номер заявки"), null=True, blank=True)
+    request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
     # passport_front = models.ImageField(_("Фото паспорта передняя сторона"), 
     #                                    upload_to="passports", null=True, blank=True)
     # passport_back = models.ImageField(_("Фото паспорта задняя сторона"), 
     #                                   upload_to="passports",null=True, blank=True)
     
     operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000)
+    price = models.CharField(_("Цена"), max_length=255, null=True, blank=True)
+    currency = models.CharField(_("Валюта"), max_length=255, null=True, blank=True)
     tourid = models.CharField(_("Код тура"), max_length=100)
     bonuses = models.DecimalField(_("Бонусы"), default=0, max_digits=10, decimal_places=2, null=True, blank=True)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def deadline(self):
+        deadline = self.created_at + timedelta(days=10)
+        return deadline.strftime('%d.%m.%Y %H:%M')
     
     class Meta:
         verbose_name = _("Заявка")
@@ -175,3 +183,15 @@ class Payments(models.Model):
         
     def __str__(self):
         return self.bank_name
+    
+
+class FAQ(models.Model):
+    question = models.CharField(_("Вопрос"), max_length=255)
+    answer = RichTextField(_("Ответ"))
+    
+    def __str__(self) -> str:
+        return self.question
+    
+    class Meta:
+        verbose_name = _("FAQ")
+        verbose_name_plural = _("FAQ")

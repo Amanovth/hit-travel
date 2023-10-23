@@ -1,14 +1,22 @@
 import os
 import shutil
 import requests
-from rest_framework import permissions, views, status
+from datetime import datetime
+from rest_framework import permissions, status
+from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from .serializers import *
 from src.base.services import get_isfavorite
 
+from django.http import HttpResponse
+from django.template.loader import get_template
+import pdfkit
+from num2words import num2words
 
-class UpdateProfilePhotoAPIView(views.APIView):
+
+class UpdateProfilePhotoAPIView(APIView):
     queryset = User.objects.all()
     permission_classes = [permissions.IsAuthenticated]
 
@@ -22,7 +30,7 @@ class UpdateProfilePhotoAPIView(views.APIView):
         return Response({"response": False})
 
 
-class RemoveProfilePhotoAPIView(views.APIView):
+class RemoveProfilePhotoAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -48,7 +56,7 @@ class RemoveProfilePhotoAPIView(views.APIView):
         )
 
 
-class ProfileInfoAPIView(views.APIView):
+class ProfileInfoAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -65,7 +73,7 @@ class ProfileInfoAPIView(views.APIView):
         return Response({"response": True, "data": serializer.data})
 
 
-class UpdateInfoView(views.APIView):
+class UpdateInfoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -77,7 +85,7 @@ class UpdateInfoView(views.APIView):
         return Response({"response": False})
 
 
-class DeleteProfileView(views.APIView):
+class DeleteProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -86,7 +94,7 @@ class DeleteProfileView(views.APIView):
         return Response({"response": True, "message": "Пользователь успешно удален"})
 
 
-class MyTourAPIVIew(views.APIView):
+class MyTourAPIVIew(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -100,6 +108,7 @@ class MyTourAPIVIew(views.APIView):
 
         for i in serializer.data:
             tourid = i["tourid"]
+            tourrequest_id = i["id"]
             status = TourRequest.objects.get(tourid=tourid, user=request.user)
             detail = requests.get(
                 f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
@@ -110,6 +119,9 @@ class MyTourAPIVIew(views.APIView):
                 continue
             try:
                 d = {}
+                d[
+                    "link"
+                ] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
                 d["tourid"] = tourid
                 d["status"] = status.status
                 d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
@@ -119,3 +131,53 @@ class MyTourAPIVIew(views.APIView):
                 continue
 
         return Response(response)
+
+
+class BonusHistoryAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user = request.user
+        except ObjectDoesNotExist:
+            return Response(
+                {"response": False, "detail": "Пользователь не найден"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        bonus_history = requests.get(
+            f"https://api.u-on.ru/{settings.KEY}/bcard-bonus-by-card/{user.bcard_id}.json"
+        )
+
+        if bonus_history.status_code != 200:
+            return Response({"response": False})
+        
+        data = bonus_history.json()["records"]
+        data.reverse()
+
+        return Response(data)
+
+
+class CreateAgreementPDF(APIView):
+    def get(self, request, tourrequest_id):
+        obj = TourRequest.objects.get(id=tourrequest_id)
+        date = datetime.now().strftime("%d.%m.%Y %H:%M")
+        price_word = num2words(int(obj.price), lang="ru")
+
+        context = {"obj": obj, "date": date, "price_word": price_word}
+
+        template = get_template("index.html")
+        html = template.render(context)
+        
+        pdf = pdfkit.from_string(html, False)
+
+        filename = f"agreement_pdf_{obj.request_number}.pdf"
+
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+        return response
+    
+
+class FAQAPIView(ListAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQListSerializer

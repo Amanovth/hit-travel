@@ -42,10 +42,10 @@ def create_lead(data, user):
 
     # Примечание
     note = (
-        f"{data['first_name']} {data['last_name']}, {data['gender']}\n"
+        # f"{data['first_name']} {data['last_name']}, {data['gender']}\n"
         f"Гражданство: {data['citizenship']}\n"
-        f"Телефон: {data['phone']}\n"
-        f"Email: {data['email']}\n"
+        # f"Телефон: {data['phone']}\n"
+        # f"Email: {data['email']}\n"
         f"ИНН: {data['inn']}\n"
         f"ID пасспорта: {data['passport_id']}\n"
         f"Страна: {data['country']}\n"
@@ -64,10 +64,30 @@ def create_lead(data, user):
         "u_phone": data["phone"],
         "u_email": data["email"],
         "note": note,
+        "source": "Мобильное приложение",
+        "extended_fields": [111046],
     }
 
     res = requests.post(url, data=r_data)
 
+    if res.status_code != 200:
+        return False
+    return res.json()
+
+
+def decrease_bonuses(bcard_id, bonuses, reason):
+    url = f"https://api.u-on.ru/{KEY}/bcard-bonus/create.json"
+
+    data = {
+        "bc_id": bcard_id,
+        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": 2,
+        "bonuses": bonuses,
+        "reason": reason,
+    }
+
+    res = requests.post(url, data=data)
+    
     if res.status_code != 200:
         return False
     return True
