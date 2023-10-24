@@ -121,7 +121,6 @@ class TourRequest(models.Model):
     phone = models.CharField(_("Телефон"), max_length=100)
     email = models.EmailField(_("E-mail"), max_length=100)
     gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
-    citizenship = models.CharField(_("Гражданство"), max_length=100)
     inn = models.CharField(_("ИНН"), max_length=100)
     city = models.CharField(_("Город"), max_length=255)
     country = models.CharField(_("Страна"), max_length=255)

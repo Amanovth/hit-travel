@@ -43,7 +43,6 @@ def create_lead(data, user):
     # Примечание
     note = (
         # f"{data['first_name']} {data['last_name']}, {data['gender']}\n"
-        f"Гражданство: {data['citizenship']}\n"
         # f"Телефон: {data['phone']}\n"
         # f"Email: {data['email']}\n"
         f"ИНН: {data['inn']}\n"

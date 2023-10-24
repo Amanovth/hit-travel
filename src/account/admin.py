@@ -120,7 +120,6 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "phone",
                     "email",
                     "gender",
-                    "citizenship",
                     "inn",
                     "city",
                     "country",

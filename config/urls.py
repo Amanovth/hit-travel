@@ -6,9 +6,10 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from .yasg import doc_urlpatterns
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('src.account.urls')),
-    path('', include('src.search.urls')),
+    path("admin/", admin.site.urls),
+    path("", include("src.account.urls")),
+    path("", include("src.search.urls")),
+    path("", include("src.main.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     # path("__debug__/", include("debug_toolbar.urls")),
 ]

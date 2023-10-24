@@ -260,7 +260,6 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "phone",
             "email",
             "gender",
-            "citizenship",
             "inn",
             "tourid",
             "operatorlink",
