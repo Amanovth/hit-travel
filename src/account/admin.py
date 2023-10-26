@@ -80,12 +80,17 @@ class UserAdmin(UserAdmin):
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
     search_fields = ("first_name", "last_name", "email")
-    ordering = ("id",)
+    ordering = ("-id",)
     inlines = (BonusHistory,)
 
 
 class TravelersInline(admin.StackedInline):
     model = Travelers
+    extra = 0
+
+
+class DocumentsInline(admin.StackedInline):
+    model = Documents
     extra = 0
 
 
@@ -106,7 +111,10 @@ class TourRequestAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     list_display_links = ("id", "user")
     search_fields = ("email", "phone", "first_name", "last_name", "inn")
-    inlines = (TravelersInline,)
+    inlines = (
+        TravelersInline,
+        DocumentsInline,
+    )
 
     fieldsets = (
         (
@@ -120,10 +128,9 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "phone",
                     "email",
                     "gender",
-                    "inn",
+                    "dateofborn",
                     "city",
                     "country",
-                    "passport_id",
                     "bonuses",
                 )
             },
@@ -131,6 +138,20 @@ class TourRequestAdmin(admin.ModelAdmin):
         (
             _("Информация о туре"),
             {"fields": ("operatorlink", "tourid", "price", "currency")},
+        ),
+        (
+            _("Паспортные данные"),
+            {
+                "fields": (
+                    "passport_front",
+                    "passport_back",
+                    "passport_id",
+                    "inn",
+                    "date_of_issue",
+                    "issued_by",
+                    "validity",
+                )
+            },
         ),
     )
     add_fieldsets = (
@@ -157,9 +178,12 @@ class PaymentsAdmin(admin.ModelAdmin):
     list_display = ("id", "bank_name")
     list_display_links = list_display
     formfield_overrides = {models.TextField: {"widget": CKEditorWidget()}}
-    
+
 
 @admin.register(FAQ)
 class FAQAdmin(admin.ModelAdmin):
-    list_display = ("id", "question",)
+    list_display = (
+        "id",
+        "question",
+    )
     list_display_links = list_display

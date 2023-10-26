@@ -15,7 +15,7 @@ from django.contrib.auth import authenticate
 
 from ..base.utils import Util
 from .serializers import *
-from .services import get_user_by_phone, bonus_card_create
+from .services import get_user_by_phone, bonus_card_create, increase_bonuses
 
 
 class PaymentsAPIView(views.APIView):
@@ -111,6 +111,7 @@ class RegisterAPIView(generics.CreateAPIView):
 
             # Create bonus card
             b_card = bonus_card_create(user)
+            add_bonuses = increase_bonuses(user.bcard_id, 1000, "Бонус за регистрацию")
             if b_card:
                 return Response({"response": True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors)

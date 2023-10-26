@@ -203,15 +203,16 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
     def get_bonuses(self, obj):
         if obj.tourist_id:
-            bonuses = requests.get(f"https://api.u-on.ru/{settings.KEY}/user/{obj.tourist_id}.json")
-        
+            bonuses = requests.get(
+                f"https://api.u-on.ru/{settings.KEY}/user/{obj.tourist_id}.json"
+            )
+
             if bonuses.status_code != 200:
                 return None
 
-            return '{:.2f}'.format(bonuses.json()["user"][0]["bcard_value"])
+            return "{:.2f}".format(bonuses.json()["user"][0]["bcard_value"])
         return None
-            
-    
+
     def get_photo(self, obj):
         if obj.photo:
             request = self.context.get("request")
@@ -243,13 +244,31 @@ class UpdateInfoSerializer(serializers.ModelSerializer):
 
 
 class TravelerSerializer(serializers.ModelSerializer):
+    dateofborn = serializers.DateField(required=False)
+
     class Meta:
         model = Travelers
         fields = ["first_name", "last_name", "dateofborn", "gender"]
 
 
+class DocumentsSerializer(serializers.ModelSerializer):
+    file = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Documents
+        fields = ["id", "name", "file"]
+
+    def get_file(self, obj):
+        if obj.file:
+            return f"https://hit-travel.org{obj.file.url}"
+        return None
+
+
 class TourRequestSerializer(serializers.ModelSerializer):
-    travelers = TravelerSerializer(many=True)
+    travelers = TravelerSerializer(many=True, required=False)
+    documents = DocumentsSerializer(many=True, required=False, read_only=True)
+    passport_front = serializers.FileField(allow_empty_file=True, required=False)
+    passport_back = serializers.FileField(allow_empty_file=True, required=False)
 
     class Meta:
         model = TourRequest
@@ -260,6 +279,7 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "phone",
             "email",
             "gender",
+            "dateofborn",
             "inn",
             "tourid",
             "operatorlink",
@@ -269,7 +289,13 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "passport_id",
             "bonuses",
             "price",
-            "currency"
+            "currency",
+            "passport_front",
+            "passport_back",
+            "date_of_issue",
+            "issued_by",
+            "validity",
+            "documents",
         ]
 
     def create(self, validated_data):
@@ -281,6 +307,11 @@ class TourRequestSerializer(serializers.ModelSerializer):
             return instance
         except KeyError:
             return super().create(validated_data)
+
+
+# class AddDocumentsViewSerializer(serializers.Serializer):
+#     passport_front = serializers.FileField(allow_empty_file=False)
+#     passport_back = serializers.FileField(allow_empty_file=False)
 
 
 class FAQListSerializer(serializers.ModelSerializer):

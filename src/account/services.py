@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 
 KEY = settings.KEY
 
@@ -42,16 +42,9 @@ def create_lead(data, user):
 
     # Примечание
     note = (
-        # f"{data['first_name']} {data['last_name']}, {data['gender']}\n"
-        # f"Телефон: {data['phone']}\n"
-        # f"Email: {data['email']}\n"
-        f"ИНН: {data['inn']}\n"
-        f"ID пасспорта: {data['passport_id']}\n"
         f"Страна: {data['country']}\n"
         f"Город: {data['city']}\n"
-        f"Бонусы: {data['bonuses']}\n"
         f"Количество путешественников: {len(data['travelers'])}\n"
-        f"Оператор: {data['operatorlink']}"
     )
 
     r_data = {
@@ -64,7 +57,12 @@ def create_lead(data, user):
         "u_email": data["email"],
         "note": note,
         "source": "Мобильное приложение",
-        "extended_fields": [111046],
+        "extended_fields": {
+            "111046": data["operatorlink"],
+            "111345": data["inn"],
+            "111352": data["passport_id"],
+            "111347": data["bonuses"],
+        },
     }
 
     res = requests.post(url, data=r_data)
@@ -86,7 +84,28 @@ def decrease_bonuses(bcard_id, bonuses, reason):
     }
 
     res = requests.post(url, data=data)
-    
+
+    if res.status_code != 200:
+        return False
+    return True
+
+
+def increase_bonuses(bcard_id, bonuses, reason):
+    url = f"https://api.u-on.ru/{KEY}/bcard-bonus/create.json"
+
+    till_date = datetime.now() + timedelta(days=30)
+
+    data = {
+        "bc_id": bcard_id,
+        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": 1,
+        "bonuses": bonuses,
+        "reason": reason,
+        "till_date": till_date.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+    res = requests.post(url, data=data)
+
     if res.status_code != 200:
         return False
     return True

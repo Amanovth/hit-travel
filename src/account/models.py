@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
@@ -115,28 +116,33 @@ class TourRequest(models.Model):
     
     user = models.ForeignKey(User, verbose_name=_("Пользователь"), on_delete=models.CASCADE)
     status = models.IntegerField(_("Статус"), choices=STATUS_CHOICES, default=2)
+    request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
     
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)
     phone = models.CharField(_("Телефон"), max_length=100)
     email = models.EmailField(_("E-mail"), max_length=100)
     gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
+    dateofborn = models.DateField(_("Дата рождения"))
+    
+    # Passport Info
     inn = models.CharField(_("ИНН"), max_length=100)
+    passport_id = models.CharField(_("ID пасспорта"), max_length=255)
+    date_of_issue = models.DateField(_("Дата выдачи"))
+    issued_by = models.CharField(_("Орган выдачи"))
+    validity = models.DateField(_("Срок действия"))
     city = models.CharField(_("Город"), max_length=255)
     country = models.CharField(_("Страна"), max_length=255)
-    passport_id = models.CharField(_("ID пасспорта"), max_length=255)
-    request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
-    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
-    # passport_front = models.ImageField(_("Фото паспорта передняя сторона"), 
-    #                                    upload_to="passports", null=True, blank=True)
-    # passport_back = models.ImageField(_("Фото паспорта задняя сторона"), 
-    #                                   upload_to="passports",null=True, blank=True)
+    passport_front = models.ImageField(_("Фото паспорта, передняя сторона"), upload_to="passports", null=True, blank=True)
+    passport_back = models.ImageField(_("Фото паспорта, задняя сторона"), upload_to="passports",null=True, blank=True)
     
     operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000)
     price = models.CharField(_("Цена"), max_length=255, null=True, blank=True)
     currency = models.CharField(_("Валюта"), max_length=255, null=True, blank=True)
     tourid = models.CharField(_("Код тура"), max_length=100)
     bonuses = models.DecimalField(_("Бонусы"), default=0, max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -148,6 +154,21 @@ class TourRequest(models.Model):
     class Meta:
         verbose_name = _("Заявка")
         verbose_name_plural = _("Заявки")
+        
+    
+class Documents(models.Model):
+    request = models.ForeignKey(TourRequest, on_delete=models.CASCADE, related_name="documents")
+    name = models.CharField(_("Название документа"), max_length=255, null=True, blank=True)
+    file = models.FileField(_("Документ"), upload_to="documents")
+    created_at = models.DateField(_("Дата создания"), auto_now_add=True)
+    
+    def __str__(self) -> str:
+        return str(self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+    
+    class Meta:
+        verbose_name = _("Документ")
+        verbose_name_plural = _("Прикрепленные документы")
+    
     
     
 class Travelers(models.Model):

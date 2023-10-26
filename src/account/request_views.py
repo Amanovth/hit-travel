@@ -1,5 +1,6 @@
-from datetime import datetime
+import json
 from rest_framework import generics, permissions
+from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .models import TourRequest
@@ -26,6 +27,9 @@ class TourRequestView(generics.CreateAPIView):
                 existing_tour_request.delete()
 
             serializer.save(user=request.user)
+            
+            with open("data.json", "w") as file:
+                json.dump(serializer.data, file, indent=4)
 
             res = create_lead(serializer.data, user)
             if res:
@@ -39,6 +43,7 @@ class TourRequestView(generics.CreateAPIView):
                 {
                     "response": True,
                     "message": "Заявка успешно отправлено",
+                    "requestid": tour_request.id
                 }
             )
         return Response(serializer.errors)

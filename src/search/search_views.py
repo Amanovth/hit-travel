@@ -1,14 +1,11 @@
 import time
-import httpx
 import requests
-from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 from .models import Currency
-from src.base.services import get_isfavorite
+from .services import get_isfavorite, get_isrequested
 
 
 class SearchView(APIView):
@@ -158,7 +155,7 @@ class FilterHotels(APIView):
 
         if hotcountry:
             url += f"&hotcountry={hotcountry}"
-            
+
         if hotregion:
             url += f"&hotregion={hotregion}"
 
@@ -185,7 +182,7 @@ class FilterHotels(APIView):
 
         if hotdeluxe:
             url += f"&hotdeluxe={hotdeluxe}"
-        
+
         if hotrelax:
             url += f"&hotrelax={hotrelax}"
 
@@ -340,14 +337,10 @@ class TourDetailView(APIView):
         except KeyError:
             flights = flights.json()
 
-        if user.is_anonymous:
-            isfavorite = False
-        else:
-            isfavorite = get_isfavorite(user=user, tourid=tourid)
-
         return Response(
             {
-                "isfavorite": isfavorite,
+                "isfavorite": get_isfavorite(user, tourid),
+                "isrequested": get_isrequested(user, tourid),
                 # "hotel": hoteldetail.json()["data"]["hotel"],
                 "tour": tour.json()["data"]["tour"],
                 "flights": flights,

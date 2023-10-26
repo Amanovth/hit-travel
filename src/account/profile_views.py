@@ -8,7 +8,7 @@ from rest_framework.generics import ListAPIView
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from .serializers import *
-from src.base.services import get_isfavorite
+from src.search.services import get_isfavorite
 
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -126,6 +126,7 @@ class MyTourAPIVIew(APIView):
                 d["status"] = status.status
                 d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
                 d["tour"] = detail.json()["data"]["tour"]
+                d["documents"] = i["documents"]
                 response.append(d)
             except KeyError:
                 continue
