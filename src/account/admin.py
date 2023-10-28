@@ -79,7 +79,7 @@ class UserAdmin(UserAdmin):
 
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
-    search_fields = ("first_name", "last_name", "email")
+    search_fields = ("first_name", "last_name", "email", "phone", "passport_id", "bcard_number")
     ordering = ("-id",)
     inlines = (BonusHistory,)
 

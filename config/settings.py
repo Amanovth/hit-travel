@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "src.account",
     "src.search",
     "src.main",
+    "src.bus_tours",
 ]
 
 MIDDLEWARE = [
