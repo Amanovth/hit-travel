@@ -28,9 +28,6 @@ class TourRequestView(generics.CreateAPIView):
 
             serializer.save(user=request.user)
             
-            with open("data.json", "w") as file:
-                json.dump(serializer.data, file, indent=4)
-
             res = create_lead(serializer.data, user)
             if res:
                 tour_request = TourRequest.objects.get(tourid=tour_id, user=user)
