@@ -4,8 +4,13 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
-from .models import BusTours, Reviews
-from .serializers import BusTourListSerializer, BusTourDetailSerializer, ReviewCreateSerializer
+from .models import BusTours, Reviews, Category
+from .serializers import (
+    BusTourListSerializer,
+    BusTourDetailSerializer,
+    ReviewCreateSerializer,
+    CategorySerializer,
+)
 from .filters import BusToursFilter
 
 
@@ -23,11 +28,15 @@ class BusTourListParamsAPIView(APIView):
         departure_choices = [
             {"name": choice[0]} for choice in BusTours.DEPARTURE_CHOICES
         ]
+        
+        categories = Category.objects.all()
+        category_serializer = CategorySerializer(categories, many=True)
 
         return Response(
             {
                 "datefrom": list(datefrom_values),
-                "departure": departure_choices,
+                "categories": category_serializer.data,
+                "departures": departure_choices,
             }
         )
 

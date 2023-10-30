@@ -7,7 +7,11 @@ from .models import (
     Cities,
     Gallery,
     Reviews,
+    Category,
 )
+
+
+admin.site.register(Category)
 
 
 class TourProgramInline(admin.StackedInline):

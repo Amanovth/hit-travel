@@ -12,4 +12,5 @@ class BusToursFilter(django_filters.FilterSet):
         fields = {
             "departure": ["exact"],
             "num_of_tourists": ["exact"],
+            "cat": ["exact"],
         }

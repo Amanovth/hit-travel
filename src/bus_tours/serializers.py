@@ -8,6 +8,7 @@ from .models import (
     Cities,
     Gallery,
     Reviews,
+    Category,
 )
 
 
@@ -131,3 +132,9 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reviews
         fields = ["tour", "full_name", "email", "body"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"

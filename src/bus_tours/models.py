@@ -17,25 +17,43 @@ class Meals(models.Model):
         verbose_name_plural = _("Питание")
 
 
+class Category(models.Model):
+    name = models.CharField(_("Название"), max_length=255)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = _("Категория")
+        verbose_name_plural = _("Категории")
+
+
 class BusTours(models.Model):
     DEPARTURE_CHOICES = (
         ("Ташкент", "Ташкент"),
         ("Бишкек", "Бишкек"),
         ("Баку", "Баку"),
     )
-    
+
+    cat = models.ForeignKey(Category, verbose_name=_("Категория"), default=1, on_delete=models.CASCADE)
     title = models.CharField(_("Заголовок"), max_length=255)
-    departure = models.CharField(_("Откуда"), max_length=255, choices=DEPARTURE_CHOICES, default="Бишкек")
+    departure = models.CharField(
+        _("Откуда"), max_length=255, choices=DEPARTURE_CHOICES, default="Бишкек"
+    )
     num_of_tourists = models.IntegerField(_("Количество туристов"), default=2)
     seats = models.IntegerField(_("Доступно мест"))
     datefrom = models.DateField(_("Начало тура"))
     dateto = models.DateField(_("Окончание тура"))
     nights = models.IntegerField(_("Ночей"))
     days = models.IntegerField(_("Дней"))
-    meal = models.ForeignKey(Meals, verbose_name=_("Питание"), on_delete=models.SET_DEFAULT, default=1)
+    meal = models.ForeignKey(
+        Meals, verbose_name=_("Питание"), on_delete=models.SET_DEFAULT, default=1
+    )
     price = models.IntegerField(_("Цена"))
     description = RichTextField(_("Описание"))
-    description_pdf = models.FileField(_("Описание тура PDF"), upload_to="descriptions", null=True, blank=True)
+    description_pdf = models.FileField(
+        _("Описание тура PDF"), upload_to="descriptions", null=True, blank=True
+    )
 
     def __str__(self) -> str:
         return f"{self.title} {self.nights} ночей"
@@ -46,7 +64,9 @@ class BusTours(models.Model):
 
 
 class TourProgram(models.Model):
-    tour = models.ForeignKey(BusTours, on_delete=models.CASCADE, related_name="programs")
+    tour = models.ForeignKey(
+        BusTours, on_delete=models.CASCADE, related_name="programs"
+    )
     day = models.IntegerField(_("День"))
     title = models.CharField(_("Заголовок"), max_length=255)
     body = RichTextField(_("Тело"))
@@ -60,7 +80,9 @@ class TourProgram(models.Model):
 
 
 class TourCondition(models.Model):
-    tour = models.ForeignKey(BusTours, on_delete=models.CASCADE, related_name="conditions")
+    tour = models.ForeignKey(
+        BusTours, on_delete=models.CASCADE, related_name="conditions"
+    )
     title = models.CharField(_("Заголовок"), max_length=255)
     body = RichTextField(_("Тело"))
 
@@ -73,7 +95,9 @@ class TourCondition(models.Model):
 
 
 class TourExcursions(models.Model):
-    tour = models.ForeignKey(BusTours, on_delete=models.CASCADE, related_name="excursions")
+    tour = models.ForeignKey(
+        BusTours, on_delete=models.CASCADE, related_name="excursions"
+    )
     title = models.CharField(_("Заголовок"), max_length=255)
     body = RichTextField(_("Тело"))
 
@@ -115,7 +139,7 @@ class Reviews(models.Model):
     email = models.EmailField(_("Email"))
     body = models.TextField(_("Отзыв"))
     created_at = models.DateTimeField(_("Дата отзыва"), auto_now_add=True)
-    
+
     def __str__(self) -> str:
         return self.full_name
 
