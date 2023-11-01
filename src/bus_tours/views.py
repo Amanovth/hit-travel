@@ -3,15 +3,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
 
-from .models import BusTours, Reviews, Category
+from .models import BusTours, Reviews, Category, BusTourRequest
 from .serializers import (
     BusTourListSerializer,
     BusTourDetailSerializer,
     ReviewCreateSerializer,
     CategorySerializer,
+    BusTourRequestSerializer,
 )
 from .filters import BusToursFilter
+from .services import send_bustour_request
 
 
 class BusTourListAPIView(ListAPIView):
@@ -28,7 +31,7 @@ class BusTourListParamsAPIView(APIView):
         departure_choices = [
             {"name": choice[0]} for choice in BusTours.DEPARTURE_CHOICES
         ]
-        
+
         categories = Category.objects.all()
         category_serializer = CategorySerializer(categories, many=True)
 
@@ -49,3 +52,34 @@ class BusTourDetailAPIView(RetrieveAPIView):
 class ReviewCreateAPIView(CreateAPIView):
     queryset = Reviews.objects.all()
     serializer_class = ReviewCreateSerializer
+
+
+class BusTourRequestAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = BusTourRequest.objects.all()
+    serializer_class = BusTourRequestSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        user = request.user
+
+        if serializer.is_valid():
+            tour = serializer.validated_data.get("tour")
+            existing_tour_request = BusTourRequest.objects.filter(
+                tour=tour, user=user
+            )
+
+            if existing_tour_request.exists():
+                return Response({"response": False})
+
+            serializer.save(user=request.user)
+            
+            res = send_bustour_request(serializer.data, user)
+
+            return Response(
+                {
+                    "response": True,
+                    "message": "Заявка успешно отправлено",
+                }
+            )
+        return Response(serializer.errors)

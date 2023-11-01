@@ -85,8 +85,8 @@ class TravelersInline(admin.StackedInline):
 
 @admin.register(BusTourRequest)
 class BusTourRequestInlin(admin.ModelAdmin):
-    list_display = ("id", "user", "tour", "satus", "payment_status", "created_at")
-    list_display = ("id", "user", "tour")
+    list_display = ("id", "user", "tour", "status", "payment_status", "created_at")
+    list_display_links = ("id", "user", "tour")
     inlines = (TravelersInline,)
     
     fieldsets = (

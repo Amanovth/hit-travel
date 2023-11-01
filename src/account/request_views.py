@@ -24,7 +24,7 @@ class TourRequestView(generics.CreateAPIView):
             )
 
             if existing_tour_request.exists():
-                existing_tour_request.delete()
+                return Response({"response": False})
 
             serializer.save(user=request.user)
             

@@ -193,7 +193,7 @@ class BusTourRequest(models.Model):
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
     
     def __str__(self) -> str:
-        self.user
+        return f"{self.first_name} {self.last_name}"
         
     class Meta:
         verbose_name = _("Заявка")

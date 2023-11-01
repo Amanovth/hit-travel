@@ -9,6 +9,8 @@ from .models import (
     Gallery,
     Reviews,
     Category,
+    Travelers,
+    BusTourRequest,
 )
 
 
@@ -102,6 +104,7 @@ class BusTourDetailSerializer(serializers.ModelSerializer):
     gallery = GallerySerializer(many=True)
     reviews = TourReviewsSerializer(many=True)
     isbustour = serializers.SerializerMethodField()
+    isrequested = serializers.SerializerMethodField()
 
     class Meta:
         model = BusTours
@@ -127,10 +130,19 @@ class BusTourDetailSerializer(serializers.ModelSerializer):
             "gallery",
             "reviews",
             "isbustour",
+            "isrequested",
         ]
 
     def get_isbustour(self, obj):
         return True
+
+    def get_isrequested(self, obj):
+        user = self.context["request"].user
+        if user.is_authenticated:
+            tour = obj
+            request_exists = BusTourRequest.objects.filter(user=user, tour=tour).exists()
+            return request_exists
+        return False
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
@@ -143,3 +155,58 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
+
+
+class TravelerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Travelers
+
+
+class BusTourRequestSerializer(serializers.ModelSerializer):
+    bustour_travelers = TravelerSerializer(many=True, required=False)
+    passport_front = serializers.FileField(allow_empty_file=True, required=False)
+    passport_back = serializers.FileField(allow_empty_file=True, required=False)
+    datefrom = serializers.ReadOnlyField(source="tour.datefrom")
+    dateto = serializers.ReadOnlyField(source="tour.dateto")
+    nights = serializers.ReadOnlyField(source="tour.nights")
+    price = serializers.ReadOnlyField(source="tour.price")
+    num_of_tourists = serializers.ReadOnlyField(source="tour.num_of_tourists")
+    meal = serializers.ReadOnlyField(source="tour.meal.name")
+
+    class Meta:
+        model = BusTourRequest
+        fields = [
+            "tour",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "gender",
+            "dateofborn",
+            "inn",
+            "passport_id",
+            "date_of_issue",
+            "issued_by",
+            "validity",
+            "city",
+            "country",
+            "passport_front",
+            "passport_back",
+            "bustour_travelers",
+            "datefrom",
+            "dateto",
+            "nights",
+            "price",
+            "num_of_tourists",
+            "meal",
+        ]
+
+    def create(self, validated_data):
+        try:
+            travelers_list = validated_data.pop("bustour_travelers")
+            instance = BusTourRequest.objects.create(**validated_data)
+            for traveler in travelers_list:
+                instance.bustour_travelers.create(**traveler)
+            return instance
+        except KeyError:
+            return super().create(validated_data)
