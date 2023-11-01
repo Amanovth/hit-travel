@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
+from django.conf import settings
 
 
 class Meals(models.Model):
@@ -146,3 +147,74 @@ class Reviews(models.Model):
     class Meta:
         verbose_name = _("Отзыв")
         verbose_name_plural = _("Отзывы")
+
+
+class BusTourRequest(models.Model):
+    PAYMENT_STATUS_CHOICES = (
+        (1, "Не оплачена"),
+        (2, "Частично оплачена"), 
+        (3, "Полностью оплачена"),
+    )
+    
+    STATUS_CHOICES = (
+        (1, "Новая"),
+        (2, "ЧВ работе"), 
+        (3, "Подтверждена"),
+    )
+    
+    GENDER_CHOICES = (
+        ("Муж", "Муж"),
+        ("Жен", "Жен")
+    )
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    tour = models.ForeignKey(BusTours, on_delete=models.SET_NULL, null=True)
+    status = models.IntegerField(_("Статус"), default=1, choices=STATUS_CHOICES)
+    payment_status = models.IntegerField(_("Статус оплаты"), default=1, choices=PAYMENT_STATUS_CHOICES)
+    
+    first_name = models.CharField(_("Имя"), max_length=100)
+    last_name = models.CharField(_("Фамилия"), max_length=100)
+    phone = models.CharField(_("Телефон"), max_length=100)
+    email = models.EmailField(_("E-mail"), max_length=100)
+    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
+    dateofborn = models.DateField(_("Дата рождения"))
+    
+    # Passport Info
+    inn = models.CharField(_("ИНН"), max_length=100)
+    passport_id = models.CharField(_("ID пасспорта"), max_length=255)
+    date_of_issue = models.DateField(_("Дата выдачи"))
+    issued_by = models.CharField(_("Орган выдачи"))
+    validity = models.DateField(_("Срок действия"))
+    city = models.CharField(_("Город"), max_length=255)
+    country = models.CharField(_("Страна"), max_length=255)
+    passport_front = models.ImageField(_("Фото паспорта, передняя сторона"), upload_to="passports", null=True, blank=True)
+    passport_back = models.ImageField(_("Фото паспорта, задняя сторона"), upload_to="passports",null=True, blank=True)
+    
+    created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
+    
+    def __str__(self) -> str:
+        self.user
+        
+    class Meta:
+        verbose_name = _("Заявка")
+        verbose_name_plural = _("Заявки")
+        
+    
+class Travelers(models.Model):
+    GENDER_CHOICES = (
+        ("Муж", "Муж"),
+        ("Жен", "Жен")
+    )
+    
+    main = models.ForeignKey(BusTourRequest, on_delete=models.CASCADE, related_name="bustour_travelers")
+    dateofborn = models.DateField(_("Дата рождения"))
+    first_name = models.CharField(_("Имя"), max_length=100)
+    last_name = models.CharField(_("Фамилия"), max_length=100)
+    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
+        
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name = _("Путешественник")
+        verbose_name_plural = _("Путешественники")

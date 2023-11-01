@@ -147,8 +147,8 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "passport_back",
                     "passport_id",
                     "inn",
-                    "date_of_issue",
                     "issued_by",
+                    "date_of_issue",
                     "validity",
                 )
             },

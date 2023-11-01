@@ -23,3 +23,17 @@ class StoryVideos(models.Model):
 
     def __str__(self) -> str:
         return self.created_at.strftime("%d %B %Y г. %H:%M")
+
+
+class Versions(models.Model):
+    version = models.CharField(_("Версия"), max_length=255)
+    appstore = models.URLField(_("App Store"), default="https://apps.apple.com/kg/app/hit-travel/id6467560261")
+    googleplay = models.URLField(_("Google Play"), default="https://play.google.com/store/apps/details?id=com.hit.travel")
+    date = models.DateTimeField(_("Дата"), auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("Версия приложения")
+        verbose_name_plural = _("Версии приложения")
+        
+    def __str__(self) -> str:
+        return self.version

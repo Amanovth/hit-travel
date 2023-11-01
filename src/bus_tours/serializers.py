@@ -101,6 +101,7 @@ class BusTourDetailSerializer(serializers.ModelSerializer):
     cities = CitiesSerializer(many=True)
     gallery = GallerySerializer(many=True)
     reviews = TourReviewsSerializer(many=True)
+    isbustour = serializers.SerializerMethodField()
 
     class Meta:
         model = BusTours
@@ -125,7 +126,11 @@ class BusTourDetailSerializer(serializers.ModelSerializer):
             "cities",
             "gallery",
             "reviews",
+            "isbustour",
         ]
+
+    def get_isbustour(self, obj):
+        return True
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):

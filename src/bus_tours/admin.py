@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 from .models import (
     BusTours,
     TourCondition,
@@ -8,6 +9,8 @@ from .models import (
     Gallery,
     Reviews,
     Category,
+    Travelers,
+    BusTourRequest,
 )
 
 
@@ -73,3 +76,49 @@ class ReviewsAdmin(admin.ModelAdmin):
     list_display = ("id", "full_name", "email", "tour", "created_at")
     list_display_links = ("id", "full_name")
     list_filter = ("tour",)
+
+
+class TravelersInline(admin.StackedInline):
+    model = Travelers
+    extra = 0
+
+
+@admin.register(BusTourRequest)
+class BusTourRequestInlin(admin.ModelAdmin):
+    list_display = ("id", "user", "tour", "satus", "payment_status", "created_at")
+    list_display = ("id", "user", "tour")
+    inlines = (TravelersInline,)
+    
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "user",
+                    "tour",
+                    "first_name",
+                    "last_name",
+                    "phone",
+                    "email",
+                    "gender",
+                    "dateofborn",
+                    "city",
+                    "country",
+                )
+            },
+        ),
+        (
+            _("Паспортные данные"),
+            {
+                "fields": (
+                    "passport_front",
+                    "passport_back",
+                    "passport_id",
+                    "inn",
+                    "issued_by",
+                    "date_of_issue",
+                    "validity",
+                )
+            },
+        ),
+    )
