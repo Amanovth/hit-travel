@@ -83,3 +83,14 @@ class BusTourRequestAPIView(CreateAPIView):
                 }
             )
         return Response(serializer.errors)
+
+
+class MyBusToursAPIView(ListAPIView):
+    serializer_class = BusTourListSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        user_requests = BusTourRequest.objects.filter(user=user)
+        requested_tours = [request.tour for request in user_requests]
+        return requested_tours

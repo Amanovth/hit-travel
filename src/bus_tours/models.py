@@ -158,7 +158,7 @@ class BusTourRequest(models.Model):
     
     STATUS_CHOICES = (
         (1, "Новая"),
-        (2, "ЧВ работе"), 
+        (2, "В работе"), 
         (3, "Подтверждена"),
     )
     
@@ -168,7 +168,7 @@ class BusTourRequest(models.Model):
     )
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    tour = models.ForeignKey(BusTours, on_delete=models.SET_NULL, null=True)
+    tour = models.ForeignKey(BusTours, on_delete=models.SET_NULL, null=True, related_name="bus_tour_request")
     status = models.IntegerField(_("Статус"), default=1, choices=STATUS_CHOICES)
     payment_status = models.IntegerField(_("Статус оплаты"), default=1, choices=PAYMENT_STATUS_CHOICES)
     

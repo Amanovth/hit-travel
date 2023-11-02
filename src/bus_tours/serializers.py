@@ -140,7 +140,9 @@ class BusTourDetailSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         if user.is_authenticated:
             tour = obj
-            request_exists = BusTourRequest.objects.filter(user=user, tour=tour).exists()
+            request_exists = BusTourRequest.objects.filter(
+                user=user, tour=tour
+            ).exists()
             return request_exists
         return False
 
@@ -157,13 +159,14 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TravelerSerializer(serializers.ModelSerializer):
+class TravelersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Travelers
+        fields = ["dateofborn", "first_name", "last_name", "gender"]
 
 
 class BusTourRequestSerializer(serializers.ModelSerializer):
-    bustour_travelers = TravelerSerializer(many=True, required=False)
+    bustour_travelers = TravelersSerializer(many=True, required=False)
     passport_front = serializers.FileField(allow_empty_file=True, required=False)
     passport_back = serializers.FileField(allow_empty_file=True, required=False)
     datefrom = serializers.ReadOnlyField(source="tour.datefrom")
