@@ -50,14 +50,22 @@ class User(AbstractUser):
     verification_code_time = models.DateTimeField(_("Verification code created time"), null=True, blank=True)
     password_reset_token = models.CharField(_("Password Reset"), max_length=100, blank=True, null=True, unique=True)
     photo = models.ImageField(
-        _("Profile photo"), 
+        _("Аватар"), 
         upload_to=get_path_upload_photo,
         default="default.png",
         validators=[validate_size_image],
     )
     date_birth = models.DateField(_("Date of birth"), null=True, blank=True)
-    passport_id = models.CharField(_("Passport ID"), max_length=8, null=True, blank=True, unique=True)
-    county = models.CharField(_("Country"), max_length=100, null=True, blank=True)
+    
+    inn = models.CharField(_("ИНН"), max_length=100, null=True, blank=True)
+    date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
+    issued_by = models.CharField(_("Орган выдачи"), null=True, blank=True)
+    validity = models.DateField(_("Срок действия"), null=True, blank=True)
+    city = models.CharField(_("Город"), max_length=255, null=True, blank=True)
+    passport_front = models.ImageField(_("Фото паспорта, передняя сторона"), upload_to="passports", null=True, blank=True)
+    passport_back = models.ImageField(_("Фото паспорта, задняя сторона"), upload_to="passports",null=True, blank=True)
+    passport_id = models.CharField(_("ID паспорта"), max_length=8, null=True, blank=True, unique=True)
+    county = models.CharField(_("Страна"), max_length=100, null=True, blank=True)
     tourist_id = models.IntegerField(_("ID Туриста"), null=True, blank=True)
     manager_id = models.IntegerField(_("ID менеджера"), null=True, blank=True)
     bcard_number = models.CharField(_("Номер бонусного счёта"), max_length=255, null=True, blank=True)

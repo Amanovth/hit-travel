@@ -35,10 +35,17 @@ class UserAdmin(UserAdmin):
                     "phone",
                     "first_name",
                     "last_name",
+                    "date_birth",
                     "photo",
                     "county",
                     "passport_id",
-                    "date_birth",
+                    "inn",
+                    "date_of_issue",
+                    "issued_by",
+                    "validity",
+                    "city",
+                    "passport_front",
+                    "passport_back",
                 )
             },
         ),
@@ -81,7 +88,6 @@ class UserAdmin(UserAdmin):
     list_display_links = ("id", "email")
     search_fields = ("first_name", "last_name", "email", "phone", "passport_id", "bcard_number")
     ordering = ("-id",)
-    inlines = (BonusHistory,)
 
 
 class TravelersInline(admin.StackedInline):

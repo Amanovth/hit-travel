@@ -12,6 +12,7 @@ from .serializers import (
     ReviewCreateSerializer,
     CategorySerializer,
     BusTourRequestSerializer,
+    MyBusToursSerializer,
 )
 from .filters import BusToursFilter
 from .services import send_bustour_request
@@ -65,16 +66,18 @@ class BusTourRequestAPIView(CreateAPIView):
 
         if serializer.is_valid():
             tour = serializer.validated_data.get("tour")
-            existing_tour_request = BusTourRequest.objects.filter(
-                tour=tour, user=user
-            )
+            existing_tour_request = BusTourRequest.objects.filter(tour=tour, user=user)
 
             if existing_tour_request.exists():
                 return Response({"response": False})
 
             serializer.save(user=request.user)
-            
+
             res = send_bustour_request(serializer.data, user)
+            if res:
+                tour_request = BusTourRequest.objects.get(tour=tour, user=user)
+                tour_request.request_number = res["id"]
+                tour_request.save()
 
             return Response(
                 {
@@ -86,11 +89,8 @@ class BusTourRequestAPIView(CreateAPIView):
 
 
 class MyBusToursAPIView(ListAPIView):
-    serializer_class = BusTourListSerializer
+    serializer_class = MyBusToursSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        user = self.request.user
-        user_requests = BusTourRequest.objects.filter(user=user)
-        requested_tours = [request.tour for request in user_requests]
-        return requested_tours
+        return BusTourRequest.objects.filter(user=self.request.user)

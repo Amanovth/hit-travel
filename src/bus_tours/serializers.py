@@ -55,7 +55,7 @@ class BusTourListSerializer(serializers.ModelSerializer):
     def get_img(self, obj):
         images = obj.gallery.all()
         if images:
-            return f"https://hit-travel.org{images[0].img.url}"
+            return images[0].img.url
         return None
 
     def get_total_reviews(self, obj):
@@ -87,9 +87,17 @@ class CitiesSerializer(serializers.ModelSerializer):
 
 
 class GallerySerializer(serializers.ModelSerializer):
+    img = serializers.SerializerMethodField()
+
     class Meta:
         model = Gallery
         fields = ["img"]
+
+    def get_img(self, obj):
+        request = self.context.get("request")
+        if request is not None:
+            return request.build_absolute_uri(obj.img.url).replace("http://", "https://")
+        return obj.img.url
 
 
 class BusTourDetailSerializer(serializers.ModelSerializer):
@@ -175,6 +183,7 @@ class BusTourRequestSerializer(serializers.ModelSerializer):
     price = serializers.ReadOnlyField(source="tour.price")
     num_of_tourists = serializers.ReadOnlyField(source="tour.num_of_tourists")
     meal = serializers.ReadOnlyField(source="tour.meal.name")
+    title = serializers.ReadOnlyField(source="tour.title")
 
     class Meta:
         model = BusTourRequest
@@ -202,6 +211,7 @@ class BusTourRequestSerializer(serializers.ModelSerializer):
             "price",
             "num_of_tourists",
             "meal",
+            "title"
         ]
 
     def create(self, validated_data):
@@ -213,3 +223,39 @@ class BusTourRequestSerializer(serializers.ModelSerializer):
             return instance
         except KeyError:
             return super().create(validated_data)
+
+
+class MyBusToursSerializer(serializers.ModelSerializer):
+    title = serializers.ReadOnlyField(source="tour.title")
+    seats = serializers.ReadOnlyField(source="tour.seats")
+    datefrom = serializers.ReadOnlyField(source="tour.datefrom")
+    dateto = serializers.ReadOnlyField(source="tour.dateto")
+    nights = serializers.ReadOnlyField(source="tour.nights")
+    days = serializers.ReadOnlyField(source="tour.days")
+    meal = serializers.ReadOnlyField(source="tour.meal.name")
+    price = serializers.ReadOnlyField(source="tour.price")
+    img = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BusTourRequest
+        fields = [
+            "id",
+            "status",
+            "payment_status",
+            "created_at",
+            "title",
+            "seats",
+            "datefrom",
+            "dateto",
+            "nights",
+            "days",
+            "meal",
+            "price",
+            "img",
+        ]
+
+    def get_img(self, obj):
+        images = obj.tour.gallery.all()
+        if images:
+            return images[0].img.url
+        return None

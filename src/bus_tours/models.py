@@ -38,6 +38,7 @@ class BusTours(models.Model):
 
     cat = models.ForeignKey(Category, verbose_name=_("Категория"), default=1, on_delete=models.CASCADE)
     title = models.CharField(_("Заголовок"), max_length=255)
+    country = models.CharField(_("Страна"), max_length=255, default="")
     departure = models.CharField(
         _("Откуда"), max_length=255, choices=DEPARTURE_CHOICES, default="Бишкек"
     )
@@ -171,6 +172,7 @@ class BusTourRequest(models.Model):
     tour = models.ForeignKey(BusTours, on_delete=models.SET_NULL, null=True, related_name="bus_tour_request")
     status = models.IntegerField(_("Статус"), default=1, choices=STATUS_CHOICES)
     payment_status = models.IntegerField(_("Статус оплаты"), default=1, choices=PAYMENT_STATUS_CHOICES)
+    request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
     
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)

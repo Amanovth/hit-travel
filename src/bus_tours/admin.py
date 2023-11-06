@@ -94,6 +94,7 @@ class BusTourRequestInlin(admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "request_number",
                     "status",
                     "payment_status",
                     "user",
