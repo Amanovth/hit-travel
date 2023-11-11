@@ -11,10 +11,12 @@ from .models import (
     Category,
     Travelers,
     BusTourRequest,
+    Meals
 )
 
 
 admin.site.register(Category)
+admin.site.register(Meals)
 
 
 class TourProgramInline(admin.StackedInline):

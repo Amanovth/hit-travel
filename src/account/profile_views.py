@@ -164,8 +164,9 @@ class CreateAgreementPDF(APIView):
         obj = TourRequest.objects.get(id=tourrequest_id)
         date = datetime.now().strftime("%d.%m.%Y %H:%M")
         price_word = num2words(int(obj.price), lang="ru")
+        surcharge_word = num2words(int(obj.surcharge), lang="ru")
 
-        context = {"obj": obj, "date": date, "price_word": price_word}
+        context = {"obj": obj, "date": date, "price_word": price_word, "surcharge_word": surcharge_word}
 
         template = get_template("index.html")
         html = template.render(context)

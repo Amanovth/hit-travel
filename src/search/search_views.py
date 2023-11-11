@@ -361,3 +361,25 @@ class RecommendationsView(APIView):
         if recommendations.status_code != 200:
             return Response({"response": False})
         return Response(recommendations.json())
+
+
+class SearchToursByHotel(APIView):
+    def get(self, request, hotels):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+        
+        search_result = requests.get(
+            f"http://tourvisor.ru/xml/search.php?format=json&hotels={hotels}"
+            f"&authlogin={authlogin}&authpass={authpass}"
+        )
+        
+        requestid = search_result.json()["result"]["requestid"]
+        
+        time.sleep(2)
+        
+        result = requests.get(
+            f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
+            f"&authlogin={authlogin}&authpass={authpass}"
+        )
+        
+        return Response(result.json())

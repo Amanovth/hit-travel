@@ -45,7 +45,7 @@ class User(AbstractUser):
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
     is_verified = models.BooleanField(_("Verification"), default=False)
-    phone = models.CharField(verbose_name=_("Phone"), max_length=12)
+    phone = models.CharField(verbose_name=_("Phone"), max_length=100)
     verification_code = models.IntegerField(_("Verification code"), null=True, blank=True)
     verification_code_time = models.DateTimeField(_("Verification code created time"), null=True, blank=True)
     password_reset_token = models.CharField(_("Password Reset"), max_length=100, blank=True, null=True, unique=True)
@@ -151,6 +151,7 @@ class TourRequest(models.Model):
     bonuses = models.DecimalField(_("Бонусы"), default=0, max_digits=10, decimal_places=2, null=True, blank=True)
     
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
+    surcharge = models.CharField(_("Доплата"), max_length=255, default=10)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

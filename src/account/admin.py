@@ -127,6 +127,8 @@ class TourRequestAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "status",
+                    "surcharge",
                     "request_number",
                     "user",
                     "first_name",

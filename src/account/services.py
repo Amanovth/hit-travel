@@ -102,8 +102,7 @@ def create_service(data, user, request_number):
 
 
 def create_lead(data, user):
-    if not user.inn or user.passport_id:
-        update_user(data, user)
+    update_user(data, user)
 
     url = f"https://api.u-on.ru/{KEY}/lead/create.json"
 

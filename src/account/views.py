@@ -56,6 +56,14 @@ class RegisterAPIView(generics.CreateAPIView):
                     "message": "Пользователь с таким email уже существует.",
                 }
             )
+            
+        if User.objects.filter(phone=request.data["phone"]).exists():
+            return Response(
+                {
+                    "response": False,
+                    "message": "Пользователь с таким телефоном уже существует.",
+                }
+            )
 
         """ Register user in system
         """

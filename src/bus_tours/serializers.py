@@ -235,6 +235,7 @@ class MyBusToursSerializer(serializers.ModelSerializer):
     meal = serializers.ReadOnlyField(source="tour.meal.name")
     price = serializers.ReadOnlyField(source="tour.price")
     img = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
 
     class Meta:
         model = BusTourRequest
@@ -253,6 +254,9 @@ class MyBusToursSerializer(serializers.ModelSerializer):
             "price",
             "img",
         ]
+
+    def get_id(self, obj):
+        return obj.tour.id
 
     def get_img(self, obj):
         images = obj.tour.gallery.all()

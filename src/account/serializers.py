@@ -198,6 +198,11 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "photo",
             "balance",
             "bonuses",
+            "inn",
+            "passport_id",
+            "date_of_issue",
+            "issued_by",
+            "validity"
             # "bonus_history",
         ]
 

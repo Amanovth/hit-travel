@@ -101,8 +101,6 @@
         .header {
             width: 100%;
             height: 300px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             border-top: 1px solid var(--border);
             border-left: 1px solid var(--border);
             border-right: 1px solid var(--border);
@@ -114,24 +112,11 @@
             border: 1px solid var(--black);
         }
 
-        .box {
-            width: 100%;
-            min-height: 1px;
-            padding: 4px;
-            background: var(--blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid var(--black);
-        }
-
         .content {
             width: 100%;
             min-height: 1px;
-            padding: 4px;
             text-align: center;
-            display: flex;
-            justify-content: center;
+            padding: 4px;
             background: var(--grey);
         }
 
@@ -142,60 +127,79 @@
             border-top: 1px solid var(--black);
             border-bottom: 1px solid var(--black);
         }
+
+        .box {
+            width: 100%;
+            padding: 8px 0;
+            background: var(--blue);
+            border-bottom: 1px solid var(--black);
+            text-align: center;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <div style="padding: 4px;">
-                <img src="https://hit-travel.org/media/hit-logo.png" alt="">
-            </div>
-            <div style="text-align: end; padding: 4px; border-left: 1px solid var(--border);">
-                <br>
-                <br>
-                <br>
-                <h4 style="color: var(--blue)">ОсОО «Хит-Трэвел»</h4>
-                <br>
-                <br>
-                <p style="color: var(--blue)">
-                    Адрес: 720001, г.Бишкек, ул. Токтогула, 165
-                </p>
-                <p style="color: var(--blue)">
-                    Моб.: +996 (557) 63 66 76
-                </p>
-                <p style="color: var(--blue)">
-                    E-Мail: info@hit-travel.kg
-                </p>
-                <p style="color: var(--blue)">
-                    http:// www.hit-travel.kg
-                </p>
-            </div>
+            <table>
+                <td>
+                    <div style="padding: 4px;">
+                        <img src="https://hit-travel.org/media/hit-logo.png" alt="">
+                    </div>
+                </td>
+                <td>
+                    <div style="text-align: end; padding: 4px;">
+                        <br>
+                        <br>
+                        <br>
+                        <h4 style="color: var(--blue)">ОсОО «Хит-Трэвел»</h4>
+                        <br>
+                        <br>
+                        <p style="color: var(--blue)">
+                            Адрес: 720001, г.Бишкек, ул. Токтогула, 165
+                        </p>
+                        <p style="color: var(--blue)">
+                            Моб.: +996 (557) 63 66 76
+                        </p>
+                        <p style="color: var(--blue)">
+                            E-Мail: info@hit-travel.kg
+                        </p>
+                        <p style="color: var(--blue)">
+                            http:// www.hit-travel.kg
+                        </p>
+                    </div>
+                </td>
+            </table>
         </div>
         <div class="body">
-            <div class="box">
+            <div class="box" >
                 <h1 class="white_big">
                     ДОГОВОР
                 </h1>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;" class="content">
-                <div>
-                    <h4>г.Бишкек</h4>
-                </div>
-                <div>
-                    <h4>№ {{obj.request_number}}</h4>
-                </div>
-                <div>
-                    <h5>{{date}}</h5>
-                </div>
+            <div class="content">
+                <table style="width: 100%;">
+                    <tr>
+                        <th>
+                            <h4>г.Бишкек</h4>
+                        </th>
+                        <th>
+                            <h4>№ {{obj.request_number}}</h4>
+                        </th>
+                        <th>
+                            <h5>{{date}}</h5>
+                        </th>
+                    </tr>
+                </table>
             </div>
             <div class="block">
                 <p>Общество с ограниченной ответственностью "Хит-Трэвел", именуемое в дальнейшем "Турагентство", в лице
                     Генерального директора Гусейнова Камиля Мурсаловича, действующего на основании Устава, с одной
-                    стороны, и гражда (нин/ка), <span>{{obj.first_name}} {{obj.last_name}}</span> действующий/ая на основании
+                    стороны, и гражда (нин/ка), <span>{{obj.first_name}} {{obj.last_name}}</span> действующий/ая на
+                    основании
                     паспорта <span>ИНН {{obj.inn}}, ID пасспорта {{obj.passport_id}}</span>,
-                    выданный <span>{паспортные данные покупателя, кем выдан}</span> от <span>{паспортные данные 
-                    покупателя, дата выдачи}</span>,именуем (ый/ая) в дальнейшем «Турист», с другой стороны,
+                    выданный <span>{{obj.issued_by}}</span> от <span>{{obj.date_of_issue}}</span>,именуем (ый/ая) в дальнейшем «Турист», с другой стороны,
                     вместе именуемые «Стороны»,
                     исходя из того, что Турист желает посетить страну для временного пребывания в
                     лечебно-оздоровительных, рекреационных, познавательных, физкультурно-спортивных,
@@ -254,7 +258,8 @@
             <div class="block">
                 <ul>
                     <li><span>Стоимость настоящего Договора она же общая цена Туристического продукта составляет
-                            {{obj.price}} {{obj.currency}}, {{price_word}} {{obj.currency}}</span>, которая включает все налоги,
+                            {{obj.price}} {{obj.currency}}, {{price_word}} {{obj.currency}}</span>, которая включает все
+                        налоги,
                         сборы и
                         отчисления, предусмотренные законодательством Кыргызской Республики.
                     </li>
@@ -262,9 +267,8 @@
                         Оплата производится Туристом в сомах по коммерческому курсу, установленному на день расчета, в
                         долларах США или Евро путем внесения наличных денежных средств в кассу Турагентства в следующем
                         порядке: <span>
-                            {сумма оплаты клиента в заявке, в валюте} ({сумма оплаты клиента в заявке, в валюте
-                            прописью} {сумма оплаты клиента в заявке, доплата} {сумма оплаты клиента в заявке, доплата
-                            прописью})
+                            {{obj.price}} {{obj.currency}} ({{price_word}} {{obj.currency}},
+                            дополнительная сумма: {{obj.surcharge}} {{obj.currency}},  {{surcharge_word}} {{obj.currency}})
                         </span>  которая включает все налоги, сборы и отчисления, предусмотренные законодательством
                         Кыргызской Республики.
                     </li>
@@ -394,92 +398,126 @@
                     <li>При аннуляции Туристского продукта, не забронированного на период «Высоких дат» Турист обязан
                         уплатить Турагентству неустойку в следующем размере:</li>
                 </ol>
-                <div style="border: 1px solid var(--black); margin: 4px 0;">
-                    <div
-                        style="background: var(--blue); display: grid;grid-template-columns: 0.1fr 1fr 1fr; border-bottom: 1px solid var(--black);">
-                        <div style="padding: 4px;">
-                            <h1 class="white">№</h1>
-                            <h1 class="white">/</h1>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <h1 class="white">Дата аннуляции Туристом Туристического пакета,
-                                по отношению к дате поездки</h1>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <h1 class="white">Размер денежного удержания (неустойки) от стоимости наземного обслуживания
-                                входящего в Туристический пакет,
-                                в %</h1>
-                        </div>
-                    </div>
-                    <div
-                        style="display: grid;grid-template-columns: 0.1fr 1fr 1fr; border-bottom: 1px solid var(--black);">
-                        <div style="padding: 4px;">
-                            <p>1</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>От 20 (двадцати)160 (сто шестьдесят) до суток</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>100 (сто) %</p>
-                        </div>
-                    </div>
-                    <div
-                        style="display: grid;grid-template-columns: 0.1fr 1fr 1fr; border-bottom: 1px solid var(--black);">
-                        <div style="padding: 4px;">
-                            <p>2</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p> От 19 (девятнадцати) и менее</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>100 (сто) %</p>
-                        </div>
-                    </div>
-                    <div style="display: grid;grid-template-columns: 0.1fr 1fr 1fr;">
-                        <div style="padding: 4px;">
-                            <p>3</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>Авиабилеты невозвратные</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>100 (сто) %</p>
-                        </div>
-                    </div>
-                </div>
+                <table style="border-collapse: collapse; border: 1px solid var(--black); margin: 4px 0;">
+                    <tr style="background: var(--blue);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <h1 class="white">№</h1>
+                                <h1 class="white">/</h1>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <h1 class="white">Дата аннуляции Туристом Туристического пакета,
+                                    по отношению к дате поездки</h1>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <h1 class="white">Размер денежного удержания (неустойки) от стоимости наземного
+                                    обслуживания
+                                    входящего в Туристический пакет,
+                                    в %</h1>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid var(--black);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <p>1</p>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>От 20 (двадцати)160 (сто шестьдесят) до суток</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>100 (сто) %</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid var(--black);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <p>2</p>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p> От 19 (девятнадцати) и менее</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>100 (сто) %</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid var(--black);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <p>3</p>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>Авиабилеты невозвратные</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>100 (сто) %</p>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
                 <ol>
                     <li>При аннуляции Туристского продукта, забронированного на период «Высоких дат» Турист обязан
                         уплатить Турагентству неустойку в следующем размере:</li>
                 </ol>
-                <div style="border: 1px solid var(--black); margin: 4px 0;">
-                    <div
-                        style="background: var(--blue); display: grid;grid-template-columns: 0.1fr 1fr 1fr; border-bottom: 1px solid var(--black);">
-                        <div style="padding: 4px;">
-                            <h1 class="white">№</h1>
-                            <h1 class="white">/</h1>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <h1 class="white">Дата аннуляции Туристом Туристического пакета,
-                                по отношению к дате поездки</h1>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <h1 class="white">Размер денежного удержания (неустойки) от стоимости наземного обслуживания
-                                входящего в Туристический пакет,
-                                в %</h1>
-                        </div>
-                    </div>
-                    <div style="display: grid;grid-template-columns: 0.1fr 1fr 1fr;">
-                        <div style="padding: 4px;">
-                            <p>1</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>От 120 (сто двадцать) и менее</p>
-                        </div>
-                        <div style="padding: 4px; border-left: 1px solid var(--black);">
-                            <p>100 (сто) %</p>
-                        </div>
-                    </div>
-                </div>
+                <table style="border-collapse: collapse; border: 1px solid var(--black); margin: 4px 0;">
+                    <tr style="background: var(--blue);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <h1 class="white">№</h1>
+                                <h1 class="white">/</h1>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <h1 class="white">Дата аннуляции Туристом Туристического пакета,
+                                    по отношению к дате поездки</h1>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <h1 class="white">Размер денежного удержания (неустойки) от стоимости наземного
+                                    обслуживания
+                                    входящего в Туристический пакет,
+                                    в %</h1>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid var(--black);">
+                        <th>
+                            <div style="padding: 4px;">
+                                <p>1</p>
+                            </div>
+                        </th>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>От 120 (сто двадцать) и менее</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="padding: 4px; border-left: 1px solid var(--black);">
+                                <p>100 (сто) %</p>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
                 <ol>
                     <li>
                         Стоимость страховки, визового сбора (консульского сбора), услуг курьера, пересылки
@@ -708,7 +746,8 @@
                 <h1>10. РАСПИСКА</h1>
             </div>
             <div class="block">
-                <span>Я, Турист <span>{{obj.first_name}} {{obj.last_name}}</span> , информирую Турагентство, что мне и/или лицам указанным в
+                <span>Я, Турист <span>{{obj.first_name}} {{obj.last_name}}</span> , информирую Турагентство, что мне
+                    и/или лицам указанным в
                     Спецификации
                     ранее не было отказано в получении Визы в страну, в которую влетаю. __________________________.
                 </span>
@@ -717,40 +756,46 @@
             <div class="content">
                 <h1>11. РЕКВИЗИТЫ СТОРОН</h1>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr;border-top: 1px solid var(--black);">
-                <div style="padding: 4px;">
-                    <h4 style="text-align: center;">ТУРАГЕНТСТВО</h4>
-                    <span>ОсОО «Хит-Трэвел»</span>
-                    <p>ОКПО 31420813 ИНН 00404202210245
-                        Юр.адрес: Кыргызская Республики, г.Бишкек, ул.Манасчы Сагынбая 77
-                        Физ. адрес: Кыргызская Республики, 720001, г.Бишкек, ул. Токтогула, 165.
-                        Тел.: +996 (557) 63 66 76;</p>
-                    <span>E-mail: info@hit-travel.kg</span>
-                    <p>http://www.<span>hit-travel.kg</span></p>
-                    <span>Генеральный директор</span>
-                    <br>
-                    <span>ОсОО «Хит-Трэвел»</span>
-                    <br>
-                    <span>К.М. Гусейнов ________________</span>
-                    <p style="margin-left: 30px;">(подпись) МП</p>
-                </div>
-                <div style="padding: 4px; border-left: 1px solid var(--black);">
-                    <h4 style="text-align: center;">ТУРИСТ</h4>
-                    <span>{{obj.first_name}} {{obj.last_name}}</span>
-                    <p>Адрес:  {адрес покупателя, фактический}</p>
-                    <p>Моб. тел.: <span>{{obj.phone}}</span></p>
-                    <p>Дом. тел.:</p>
-                    <p>Тел. близкого родственника:</p>
-                    <span>
-                        E-mail: {{obj.email}}
-                    </span>
-                    <br>
-                    <br>
-                    <br>
-                    <p>Подпись</p>
-                    <p>__________________________________</p>
-                </div>
-            </div>
+            <table style="border-collapse: collapse; border-top: 1px solid var(--black);">
+                <tr>
+                    <td>
+                        <div style="padding: 4px;">
+                            <h4 style="text-align: center;">ТУРАГЕНТСТВО</h4>
+                            <span>ОсОО «Хит-Трэвел»</span>
+                            <p>ОКПО 31420813 ИНН 00404202210245
+                                Юр.адрес: Кыргызская Республики, г.Бишкек, ул.Манасчы Сагынбая 77
+                                Физ. адрес: Кыргызская Республики, 720001, г.Бишкек, ул. Токтогула, 165.
+                                Тел.: +996 (557) 63 66 76;</p>
+                            <span>E-mail: info@hit-travel.kg</span>
+                            <p>http://www.<span>hit-travel.kg</span></p>
+                            <span>Генеральный директор</span>
+                            <br>
+                            <span>ОсОО «Хит-Трэвел»</span>
+                            <br>
+                            <span>К.М. Гусейнов ________________</span>
+                            <p style="margin-left: 30px;">(подпись) МП</p>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h4 style="text-align: center;">ТУРИСТ</h4>
+                            <span>{{obj.first_name}} {{obj.last_name}}</span>
+                            <p>Адрес:  -</p>
+                            <p>Моб. тел.: <span>{{obj.phone}}</span></p>
+                            <p>Дом. тел.:</p>
+                            <p>Тел. близкого родственника:</p>
+                            <span>
+                                E-mail: {{obj.email}}
+                            </span>
+                            <br>
+                            <br>
+                            <br>
+                            <p>Подпись</p>
+                            <p>__________________________________</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

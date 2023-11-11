@@ -11,7 +11,7 @@ def create_service(data, user, request_number):
     data = {
         "r_id": request_number,
         "type_id": 17,
-        "description": f"Автобусный тур: {data['title']}",
+        "description": f"Автобусный тур: {data['title']}\nСсылка: ",
         "date_begin": data["datefrom"],
         "date_end": data["dateto"],
         "country": data["country"],
