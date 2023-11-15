@@ -8,7 +8,7 @@ from .serializers import StoriesSerializers, VersionsSerializer
 
 
 class StoriesView(ListAPIView):
-    queryset = Stories.objects.all()
+    queryset = Stories.objects.order_by("-id")
     serializer_class = StoriesSerializers
 
 

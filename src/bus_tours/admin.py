@@ -71,6 +71,7 @@ class BusToursAdmin(admin.ModelAdmin):
         CitiesInline,
         GalleryInline,
     )
+    save_as = True
 
 
 @admin.register(Reviews)
