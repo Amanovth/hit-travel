@@ -5,8 +5,11 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from ..base.services import get_path_upload_photo, validate_size_image
+from .services import add_tourist_on_user_creation
 
 
 class UserManager(BaseUserManager):
@@ -45,7 +48,7 @@ class User(AbstractUser):
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
     is_verified = models.BooleanField(_("Verification"), default=False)
-    phone = models.CharField(verbose_name=_("Phone"), max_length=100)
+    phone = models.CharField(verbose_name=_("Телефон"), max_length=100)
     verification_code = models.IntegerField(_("Verification code"), null=True, blank=True)
     verification_code_time = models.DateTimeField(_("Verification code created time"), null=True, blank=True)
     password_reset_token = models.CharField(_("Password Reset"), max_length=100, blank=True, null=True, unique=True)
@@ -55,7 +58,7 @@ class User(AbstractUser):
         default="default.png",
         validators=[validate_size_image],
     )
-    date_birth = models.DateField(_("Date of birth"), null=True, blank=True)
+    date_birth = models.DateField(_("Дата рождения"), null=True, blank=True)
     
     inn = models.CharField(_("ИНН"), max_length=100, null=True, blank=True)
     date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
@@ -87,6 +90,11 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.bcard_number = str(100).zfill(10)
+
+@receiver(post_save, sender=User)
+def send_email_on_create(sender, instance, created, **kwargs):
+    if created:
+        add_tourist_on_user_creation(sender, instance)
 
 
 class BonusHistory(models.Model):
@@ -224,3 +232,5 @@ class FAQ(models.Model):
     class Meta:
         verbose_name = _("FAQ")
         verbose_name_plural = _("FAQ")
+
+

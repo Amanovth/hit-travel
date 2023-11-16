@@ -80,7 +80,7 @@ def create_service(data, user, request_number):
     data = {
         "r_id": request_number,
         "type_id": 12,
-        "description": f"Тур: {tour_data['tourname']}\nГород вылета: {tour_data['departurename']}",
+        "description": f"Тур: {tour_data['tourname']}\nГород вылета: {tour_data['departurename']}\nОператор: {tour_data['operatorname']}",
         "date_begin": tour_data["flydate"],
         # "date_end": data["dateto"],
         "country": tour_data["countryname"],
@@ -95,7 +95,7 @@ def create_service(data, user, request_number):
         "price": tour_data["price"],
         "currency_id": 2,
         "currency_id_netto": 2,
-        "supplier_id": int(tour_data["operatorcode"]),
+        # "supplier_id": int(tour_data["operatorcode"]),
     }
 
     requests.post(url, data=data)
@@ -168,3 +168,34 @@ def increase_bonuses(bcard_id, bonuses, reason):
     if res.status_code != 200:
         return False
     return True
+
+
+def add_tourist_on_user_creation(sender, instance):
+    url = f"https://api.u-on.ru/{KEY}/user/create.json"
+
+    data = {
+        "u_surname": instance.last_name,
+        "u_name": instance.first_name,
+        "u_email": instance.email,
+        "u_phone_mobile": instance.phone,
+        "u_birthday": instance.date_birth,
+        "u_inn": instance.inn,
+        "u_zagran_number": instance.inn,
+        "u_zagran_given": instance.date_of_issue,
+        "u_zagran_expire": instance.validity,
+        "u_zagran_organization": instance.issued_by,
+        "u_birthday_place": f"{instance.city} {instance.county}"
+    }
+
+    res = requests.post(url, data)
+
+    if res.status_code != 200:
+        return False
+    
+    instance.tourist_id = res.json()["id"]
+    instance.is_verified = True
+    instance.save()
+
+    bonus_card_create(instance)
+
+    return

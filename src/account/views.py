@@ -29,22 +29,22 @@ class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterAPIViewSerializer
 
-    def add_tourist(self, user):
-        crm_data = {
-            "u_surname": user.last_name,
-            "u_name": user.first_name,
-            "u_email": user.email,
-            "u_phone": user.phone,
-        }
+    # def add_tourist(self, user):
+    #     crm_data = {
+    #         "u_surname": user.last_name,
+    #         "u_name": user.first_name,
+    #         "u_email": user.email,
+    #         "u_phone_mobile": user.phone,
+    #     }
 
-        key = settings.KEY
-        res = requests.post(
-            f"https://api.u-on.ru/{key}/user/create.json", data=crm_data
-        )
-        res.raise_for_status()
-        user.tourist_id = res.json()["id"]
-        user.save()
-        return
+    #     key = settings.KEY
+    #     res = requests.post(
+    #         f"https://api.u-on.ru/{key}/user/create.json", data=crm_data
+    #     )
+    #     res.raise_for_status()
+    #     user.tourist_id = res.json()["id"]
+    #     user.save()
+    #     return
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -92,7 +92,7 @@ class RegisterAPIView(generics.CreateAPIView):
 
             """ Create tourist in https://u-on.ru
             """
-            self.add_tourist(user)
+            # self.add_tourist(user)
 
             """ Send verification code to user
             """
@@ -111,17 +111,16 @@ class RegisterAPIView(generics.CreateAPIView):
             Util.send_email(email_data)
 
             # Get manager_id and touris_id
-            data = get_user_by_phone(user.phone)
-            if data:
-                user.tourist_id = int(data["u_id"])
-                user.manager_id = int(data["manager_id"])
-                user.save()
+            # data = get_user_by_phone(user.phone)
+            # if data:
+            #     user.tourist_id = int(data["u_id"])
+            #     user.manager_id = int(data["manager_id"])
+            #     user.save()
 
             # Create bonus card
-            b_card = bonus_card_create(user)
+            # b_card = bonus_card_create(user)
             add_bonuses = increase_bonuses(user.bcard_id, 1000, "Бонус за регистрацию")
-            if b_card:
-                return Response({"response": True}, status=status.HTTP_201_CREATED)
+            return Response({"response": True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors)
 
 
