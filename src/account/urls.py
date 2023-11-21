@@ -22,7 +22,7 @@ urlpatterns = [
     path("profile/update-info", UpdateInfoView.as_view(), name="update-info"),
     path("profile/delete", DeleteProfileView.as_view(), name="delete-profile"),
     path("profile/my-tour", MyTourAPIVIew.as_view(), name="my-tour"),
-    path("profile/agreement-pdf/<int:tourrequest_id>", CreateAgreementPDF.as_view(), name="agreement-pdf"),
+    # path("profile/agreement-pdf/<int:tourrequest_id>", CreateAgreementPDF.as_view(), name="agreement-pdf"),
     
     # Request
     path("tour/request", TourRequestView.as_view(), name="tour-request"),

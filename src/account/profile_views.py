@@ -10,10 +10,10 @@ from django.conf import settings
 from .serializers import *
 from src.search.services import get_isfavorite
 
-from django.http import HttpResponse
-from django.template.loader import get_template
-import pdfkit
-from num2words import num2words
+# from django.core.files.base import ContentFile
+# from django.template.loader import get_template
+# import pdfkit
+# from num2words import num2words
 
 
 class UpdateProfilePhotoAPIView(APIView):
@@ -119,9 +119,8 @@ class MyTourAPIVIew(APIView):
                 continue
             try:
                 d = {}
-                d[
-                    "link"
-                ] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
+                # d["link"] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
+                d["link"] = f"https://hit-travel.org{i['agreement']}"
                 d["tourid"] = tourid
                 d["status"] = status.status
                 d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
@@ -152,33 +151,40 @@ class BonusHistoryAPIView(APIView):
 
         if bonus_history.status_code != 200:
             return Response({"response": False})
-        
+
         data = bonus_history.json()["records"]
         data.reverse()
 
         return Response(data)
 
 
-class CreateAgreementPDF(APIView):
-    def get(self, request, tourrequest_id):
-        obj = TourRequest.objects.get(id=tourrequest_id)
-        date = datetime.now().strftime("%d.%m.%Y %H:%M")
-        price_word = num2words(int(obj.price), lang="ru")
-        surcharge_word = num2words(int(obj.surcharge), lang="ru")
+# class CreateAgreementPDF(APIView):
+#     def get(self, request, tourrequest_id):
+#         obj = TourRequest.objects.get(id=tourrequest_id)
+#         date = datetime.now().strftime("%d.%m.%Y %H:%M")
+#         price_word = num2words(int(obj.price), lang="ru")
+#         surcharge_word = num2words(int(obj.surcharge), lang="ru")
 
-        context = {"obj": obj, "date": date, "price_word": price_word, "surcharge_word": surcharge_word}
+#         context = {
+#             "obj": obj,
+#             "date": date,
+#             "price_word": price_word,
+#             "surcharge_word": surcharge_word,
+#         }
 
-        template = get_template("index.html")
-        html = template.render(context)
-        
-        pdf = pdfkit.from_string(html, False)
+#         template = get_template("index.html")
+#         html = template.render(context)
 
-        filename = f"agreement_pdf_{obj.request_number}.pdf"
+#         pdf = pdfkit.from_string(html, False)
 
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
-        return response
-    
+#         filename = f"agreement_pdf_{obj.request_number}.pdf"
+
+#         obj.agreement.save(
+#             f"agreement_pdf_{obj.request_number}.pdf", ContentFile(pdf), save=True
+#         )
+
+#         return Response({"agreement_url": obj.agreement.url})
+
 
 class FAQAPIView(ListAPIView):
     queryset = FAQ.objects.all()

@@ -301,6 +301,7 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "issued_by",
             "validity",
             "documents",
+            "agreement"
         ]
 
     def create(self, validated_data):

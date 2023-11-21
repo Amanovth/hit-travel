@@ -108,7 +108,6 @@ def create_lead(data, user):
 
     # Примечание
     note = f"Оператор: {data['operatorlink']}\n"
-    extended_fields = {92473: "VIP"}
 
     r_data = {
         "r_dat": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -118,8 +117,7 @@ def create_lead(data, user):
         "u_phone": data["phone"],
         "u_email": data["email"],
         "note": note,
-        "source": "Мобильное приложение",
-        "extended_fields": extended_fields,
+        "source": "Мобильное приложение"
     }
 
     res = requests.post(url, data=r_data)
@@ -199,3 +197,21 @@ def add_tourist_on_user_creation(sender, instance):
     bonus_card_create(instance)
 
     return
+
+
+def add_lead_on_creation(sender, instance):
+    url = f"https://api.u-on.ru/{KEY}/lead/create.json"
+
+    # Примечание
+    note = f"Оператор: {instance.operatorlink}\n"
+
+    r_data = {
+        "r_dat": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "r_cl_id": instance.user.tourist_id,
+        "u_surname": instance.last_name,
+        "u_name": instance.first_name,
+        "u_phone": instance.phone,
+        "u_email": instance.email,
+        "note": note,
+        "source": "Мобильное приложение"
+    }

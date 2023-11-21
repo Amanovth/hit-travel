@@ -1,15 +1,17 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.template.loader import get_template
+import pdfkit
+from num2words import num2words
 
 from ..base.services import get_path_upload_photo, validate_size_image
-from .services import add_tourist_on_user_creation
+from .services import add_tourist_on_user_creation, add_lead_on_creation
 
 
 class UserManager(BaseUserManager):
@@ -92,7 +94,7 @@ class User(AbstractUser):
         self.bcard_number = str(100).zfill(10)
 
 @receiver(post_save, sender=User)
-def send_email_on_create(sender, instance, created, **kwargs):
+def add_tourist(sender, instance, created, **kwargs):
     if created:
         add_tourist_on_user_creation(sender, instance)
 
@@ -160,19 +162,29 @@ class TourRequest(models.Model):
     
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
     surcharge = models.CharField(_("Доплата"), max_length=255, default=10)
+    agreement = models.FileField(_("Договор"), upload_to="agreements", null=True, blank=True)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     
+    def save(self, *args, **kwargs):
+        super(TourRequest, self).save(*args, **kwargs)
+    
     def deadline(self):
         deadline = self.created_at + timedelta(days=10)
         return deadline.strftime('%d.%m.%Y %H:%M')
-    
+        
     class Meta:
         verbose_name = _("Заявка")
         verbose_name_plural = _("Заявки")
-        
-    
+
+
+@receiver(post_save, sender=TourRequest)
+def add_request(sender, instance, created, **kwargs):
+    if created:
+        add_lead_on_creation(sender, instance)
+
+
 class Documents(models.Model):
     request = models.ForeignKey(TourRequest, on_delete=models.CASCADE, related_name="documents")
     name = models.CharField(_("Название документа"), max_length=255, null=True, blank=True)

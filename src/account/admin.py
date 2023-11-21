@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.admin import UserAdmin, Group
+from django.contrib.auth.admin import UserAdmin
 from ckeditor.widgets import CKEditorWidget
 from .models import *
 
@@ -94,7 +96,14 @@ class UserAdmin(UserAdmin):
 
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
-    search_fields = ("first_name", "last_name", "email", "phone", "passport_id", "bcard_number")
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "passport_id",
+        "bcard_number",
+    )
     ordering = ("-id",)
 
 
@@ -113,12 +122,10 @@ class TourRequestAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "get_fio",
         "request_number",
         "status",
         "phone",
-        "first_name",
-        "last_name",
-        "tourid",
         "created_at",
     )
     list_editable = ("status",)
@@ -129,6 +136,12 @@ class TourRequestAdmin(admin.ModelAdmin):
         TravelersInline,
         DocumentsInline,
     )
+
+    def get_fio(self, object):
+        if object.user:
+            return f"{object.user.first_name} {object.user.last_name}"
+
+    get_fio.short_description = "ФИО"
 
     fieldsets = (
         (
@@ -148,6 +161,7 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "city",
                     "country",
                     "bonuses",
+                    "agreement",
                 )
             },
         ),
@@ -176,16 +190,21 @@ class TourRequestAdmin(admin.ModelAdmin):
             {
                 "classes": ("wide",),
                 "fields": (
-                    "email",
-                    "phone",
-                    "first_name",
-                    "last_name",
-                    "password1",
-                    "password2",
+                    "user",
+                    "operatorlink",
+                    "price",
+                    "currency",
+                    "tourid",
+                    "surcharge",
                 ),
             },
         ),
     )
+
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+        return super().get_fieldsets(request, obj)
 
 
 @admin.register(Payments)
@@ -193,7 +212,6 @@ class PaymentsAdmin(admin.ModelAdmin):
     model = Payments
     list_display = ("id", "bank_name")
     list_display_links = list_display
-    formfield_overrides = {models.TextField: {"widget": CKEditorWidget()}}
 
 
 @admin.register(FAQ)
