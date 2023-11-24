@@ -40,6 +40,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    GENDER_CHOICES = (
+        ("Муж", "Муж"),
+        ("Жен", "Жен")
+    )
     username = None
     balance = models.DecimalField(_("Balance"), default=0, max_digits=10, decimal_places=2)
     bonuses = models.DecimalField(_("Bonuses"), default=0, max_digits=10, decimal_places=2)
@@ -57,7 +61,8 @@ class User(AbstractUser):
         default="default.png",
         validators=[validate_size_image],
     )
-    date_birth = models.DateField(_("Дата рождения"), null=True, blank=True)
+    dateofborn = models.DateField(_("Дата рождения"), null=True, blank=True)
+    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
     
     inn = models.CharField(_("ИНН"), max_length=100, null=True, blank=True)
     date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
@@ -162,6 +167,23 @@ class RequestTour(models.Model):
         return f"{self.first_name} {self.last_name}"
     
     def save(self, *args, **kwargs):
+        user = self.user
+        user.phone = self.phone
+        user.first_name = self.first_name
+        user.last_name = self.last_name
+        user.gender = self.gender
+        user.dateofborn = self.dateofborn
+        user.inn = self.inn
+        user.passport_id = self.passport_id
+        user.date_of_issue = self.date_of_issue
+        user.issued_by = self.issued_by
+        user.validity = self.validity
+        user.city = self.city
+        user.county = self.country
+        user.passport_front = self.passport_front
+        user.passport_back = self.passport_back
+        user.save()
+        99265162754411
         super(RequestTour, self).save(*args, **kwargs)
     
     def deadline(self):

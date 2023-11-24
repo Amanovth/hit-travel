@@ -199,7 +199,10 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "passport_id",
             "date_of_issue",
             "issued_by",
-            "validity"
+            "validity",
+            "dateofborn",
+            "city",
+            "county"
             # "bonus_history",
         ]
 
