@@ -115,7 +115,7 @@ class MyTourAPIVIew(APIView):
             try:
                 d = {}
                 # d["link"] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
-                d["link"] = f"https://hit-travel.org{i['agreement']}"
+                d["link"] = f"http://hit-travel.org{i['agreement']}"
                 d["tourid"] = tourid
                 d["status"] = status.status
                 d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)

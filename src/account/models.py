@@ -183,7 +183,7 @@ class RequestTour(models.Model):
         user.passport_front = self.passport_front
         user.passport_back = self.passport_back
         user.save()
-        99265162754411
+
         super(RequestTour, self).save(*args, **kwargs)
     
     def deadline(self):

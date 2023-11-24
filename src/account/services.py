@@ -205,7 +205,7 @@ def add_lead_on_creation(sender, instance):
     # Примечание
     note = f"Оператор: {instance.operatorlink}\n"
 
-    r_data = {
+    data = {
         "r_dat": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "r_cl_id": instance.user.tourist_id,
         "u_surname": instance.last_name,
@@ -215,3 +215,5 @@ def add_lead_on_creation(sender, instance):
         "note": note,
         "source": "Мобильное приложение"
     }
+
+    res = requests.post(url, data)
