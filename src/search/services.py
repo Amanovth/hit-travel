@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Favorites
-from src.account.models import TourRequest
+from src.account.models import RequestTour
 
 
 def get_isfavorite(user, tourid):
@@ -17,7 +17,7 @@ def get_isrequested(user, tourid):
     if user.is_anonymous:
         return False
     try:
-        TourRequest.objects.get(user=user, tourid=int(tourid))
+        RequestTour.objects.get(user=user, tourid=int(tourid))
         return True
     except ObjectDoesNotExist:
         return False

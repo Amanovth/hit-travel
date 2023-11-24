@@ -2,7 +2,7 @@ from datetime import datetime
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
-from .models import TourRequest
+from .models import RequestTour
 from .serializers import TourRequestSerializer
 from .services import create_lead, decrease_bonuses
 from django.core.files.base import ContentFile
@@ -13,7 +13,7 @@ from num2words import num2words
 
 class TourRequestView(generics.CreateAPIView):
     serializer_class = TourRequestSerializer
-    queryset = TourRequest.objects.all()
+    queryset = RequestTour.objects.all()
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -22,7 +22,7 @@ class TourRequestView(generics.CreateAPIView):
 
         if serializer.is_valid():
             tour_id = serializer.validated_data.get("tourid")
-            existing_tour_request = TourRequest.objects.filter(
+            existing_tour_request = RequestTour.objects.filter(
                 tourid=tour_id, user=user
             )
 
@@ -33,7 +33,7 @@ class TourRequestView(generics.CreateAPIView):
 
             res = create_lead(serializer.data, user)
             if res:
-                tour_request = TourRequest.objects.get(tourid=tour_id, user=user)
+                tour_request = RequestTour.objects.get(tourid=tour_id, user=user)
                 tour_request.request_number = res["id"]
 
                 date = datetime.now().strftime("%d.%m.%Y %H:%M")

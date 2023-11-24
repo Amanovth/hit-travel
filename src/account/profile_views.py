@@ -1,7 +1,6 @@
 import os
 import shutil
 import requests
-from datetime import datetime
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
@@ -9,11 +8,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from .serializers import *
 from src.search.services import get_isfavorite
-
-# from django.core.files.base import ContentFile
-# from django.template.loader import get_template
-# import pdfkit
-# from num2words import num2words
 
 
 class UpdateProfilePhotoAPIView(APIView):
@@ -102,14 +96,14 @@ class MyTourAPIVIew(APIView):
         authpass = settings.AUTHPASS
         user = request.user
 
-        queryset = TourRequest.objects.filter(user=request.user)
+        queryset = RequestTour.objects.filter(user=request.user)
         serializer = TourRequestSerializer(queryset, many=True)
         response = []
 
         for i in serializer.data:
             tourid = i["tourid"]
             tourrequest_id = i["id"]
-            status = TourRequest.objects.get(tourid=tourid, user=request.user)
+            status = RequestTour.objects.get(tourid=tourid, user=request.user)
             detail = requests.get(
                 f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
                 f"&format=json&authpass={authpass}&authlogin={authlogin}"

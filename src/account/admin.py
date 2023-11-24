@@ -1,9 +1,6 @@
 from django.contrib import admin
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin
-from ckeditor.widgets import CKEditorWidget
 from .models import *
 
 
@@ -108,16 +105,16 @@ class UserAdmin(UserAdmin):
 
 
 class TravelersInline(admin.StackedInline):
-    model = Travelers
+    model = Traveler
     extra = 0
 
 
 class DocumentsInline(admin.StackedInline):
-    model = Documents
+    model = Document
     extra = 0
 
 
-@admin.register(TourRequest)
+@admin.register(RequestTour)
 class TourRequestAdmin(admin.ModelAdmin):
     list_display = (
         "id",

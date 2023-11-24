@@ -1,10 +1,7 @@
 import locale
 import requests
-from decimal import Decimal
 from rest_framework import serializers
-from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import authenticate
 from django.conf import settings
 
 from .models import *
@@ -235,7 +232,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
 class MyTourSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TourRequest
+        model = RequestTour
         fields = "__all__"
 
 
@@ -252,7 +249,7 @@ class TravelerSerializer(serializers.ModelSerializer):
     dateofborn = serializers.DateField(required=False)
 
     class Meta:
-        model = Travelers
+        model = Traveler
         fields = ["first_name", "last_name", "dateofborn", "gender"]
 
 
@@ -260,7 +257,7 @@ class DocumentsSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
 
     class Meta:
-        model = Documents
+        model = Document
         fields = ["id", "name", "file"]
 
     def get_file(self, obj):
@@ -276,7 +273,7 @@ class TourRequestSerializer(serializers.ModelSerializer):
     passport_back = serializers.FileField(allow_empty_file=True, required=False)
 
     class Meta:
-        model = TourRequest
+        model = RequestTour
         fields = [
             "id",
             "first_name",
@@ -307,7 +304,7 @@ class TourRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             travelers_list = validated_data.pop("travelers")
-            instance = TourRequest.objects.create(**validated_data)
+            instance = RequestTour.objects.create(**validated_data)
             for traveler in travelers_list:
                 instance.travelers.create(**traveler)
             return instance

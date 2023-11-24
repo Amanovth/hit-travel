@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
@@ -6,9 +6,6 @@ from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from django.template.loader import get_template
-import pdfkit
-from num2words import num2words
 
 from ..base.services import get_path_upload_photo, validate_size_image
 from .services import add_tourist_on_user_creation, add_lead_on_creation
@@ -89,9 +86,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.bcard_number = str(100).zfill(10)
 
 @receiver(post_save, sender=User)
 def add_tourist(sender, instance, created, **kwargs):
@@ -119,8 +113,8 @@ class BonusHistory(models.Model):
         verbose_name  = _("История бонусов")
         verbose_name_plural = _("История бонусов")
         
-        
-class TourRequest(models.Model):
+
+class RequestTour(models.Model):
     GENDER_CHOICES = (
         ("Муж", "Муж"),
         ("Жен", "Жен")
@@ -148,7 +142,7 @@ class TourRequest(models.Model):
     passport_id = models.CharField(_("ID пасспорта"), max_length=255)
     date_of_issue = models.DateField(_("Дата выдачи"))
     issued_by = models.CharField(_("Орган выдачи"))
-    validity = models.DateField(_("Срок действия"))
+    validity = models.DateField(_("Срок действия"), null=True, blank=True)
     city = models.CharField(_("Город"), max_length=255)
     country = models.CharField(_("Страна"), max_length=255)
     passport_front = models.ImageField(_("Фото паспорта, передняя сторона"), upload_to="passports", null=True, blank=True)
@@ -168,7 +162,7 @@ class TourRequest(models.Model):
         return f"{self.first_name} {self.last_name}"
     
     def save(self, *args, **kwargs):
-        super(TourRequest, self).save(*args, **kwargs)
+        super(RequestTour, self).save(*args, **kwargs)
     
     def deadline(self):
         deadline = self.created_at + timedelta(days=10)
@@ -179,14 +173,14 @@ class TourRequest(models.Model):
         verbose_name_plural = _("Заявки")
 
 
-@receiver(post_save, sender=TourRequest)
+@receiver(post_save, sender=RequestTour)
 def add_request(sender, instance, created, **kwargs):
     if created:
         add_lead_on_creation(sender, instance)
 
 
-class Documents(models.Model):
-    request = models.ForeignKey(TourRequest, on_delete=models.CASCADE, related_name="documents")
+class Document(models.Model):
+    request = models.ForeignKey(RequestTour, on_delete=models.CASCADE, related_name="documents")
     name = models.CharField(_("Название документа"), max_length=255, null=True, blank=True)
     file = models.FileField(_("Документ"), upload_to="documents")
     created_at = models.DateField(_("Дата создания"), auto_now_add=True)
@@ -197,16 +191,15 @@ class Documents(models.Model):
     class Meta:
         verbose_name = _("Документ")
         verbose_name_plural = _("Прикрепленные документы")
+
     
-    
-    
-class Travelers(models.Model):
+class Traveler(models.Model):
     GENDER_CHOICES = (
         ("Муж", "Муж"),
         ("Жен", "Жен")
     )
     
-    main = models.ForeignKey(TourRequest, on_delete=models.CASCADE, related_name="travelers")
+    main = models.ForeignKey(RequestTour, on_delete=models.CASCADE, related_name="travelers")
     dateofborn = models.DateField(_("Дата рождения"))
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)
