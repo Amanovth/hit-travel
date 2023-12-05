@@ -118,8 +118,8 @@ class DocumentsInline(admin.StackedInline):
 class TourRequestAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
-        "get_fio",
+        "first_name",
+        "last_name",
         "request_number",
         "status",
         "phone",
@@ -127,18 +127,18 @@ class TourRequestAdmin(admin.ModelAdmin):
     )
     list_editable = ("status",)
     list_filter = ("status",)
-    list_display_links = ("id", "user")
+    list_display_links = ("id", "first_name", "last_name", "request_number")
     search_fields = ("email", "phone", "first_name", "last_name", "inn")
     inlines = (
         TravelersInline,
         DocumentsInline,
     )
 
-    def get_fio(self, object):
-        if object.user:
-            return f"{object.user.first_name} {object.user.last_name}"
+    # def get_fio(self, object):
+    #     if object.user:
+    #         return f"{object.user.first_name} {object.user.last_name}"
 
-    get_fio.short_description = "ФИО"
+    # get_fio.short_description = "ФИО"
 
     fieldsets = (
         (
@@ -159,6 +159,7 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "country",
                     "bonuses",
                     "agreement",
+                    "instagram"
                 )
             },
         ),

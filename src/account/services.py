@@ -176,7 +176,7 @@ def add_tourist_on_user_creation(sender, instance):
         "u_name": instance.first_name,
         "u_email": instance.email,
         "u_phone_mobile": instance.phone,
-        "u_birthday": instance.date_birth,
+        "u_birthday": instance.dateofborn,
         "u_inn": instance.inn,
         "u_zagran_number": instance.inn,
         "u_zagran_given": instance.date_of_issue,

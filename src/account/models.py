@@ -131,7 +131,7 @@ class RequestTour(models.Model):
         (4, "Отклонено"),
     )
     
-    user = models.ForeignKey(User, verbose_name=_("Пользователь"), on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name=_("Пользователь"), on_delete=models.CASCADE, null=True, blank=True)
     status = models.IntegerField(_("Статус"), choices=STATUS_CHOICES, default=2)
     request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
     
@@ -153,7 +153,7 @@ class RequestTour(models.Model):
     passport_front = models.ImageField(_("Фото паспорта, передняя сторона"), upload_to="passports", null=True, blank=True)
     passport_back = models.ImageField(_("Фото паспорта, задняя сторона"), upload_to="passports",null=True, blank=True)
     
-    operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000)
+    operatorlink = models.URLField(_("Ссылка на оператора"), max_length=1000, null=True, blank=True)
     price = models.CharField(_("Цена"), max_length=255, null=True, blank=True)
     currency = models.CharField(_("Валюта"), max_length=255, null=True, blank=True)
     tourid = models.CharField(_("Код тура"), max_length=100)
@@ -162,29 +162,31 @@ class RequestTour(models.Model):
     created_at = models.DateTimeField(_("Дата создания"), auto_now_add=True, null=True, blank=True)
     surcharge = models.CharField(_("Доплата"), max_length=255, default=10)
     agreement = models.FileField(_("Договор"), upload_to="agreements", null=True, blank=True)
+    instagram = models.URLField(_("Instagram"), null=True, blank=True)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     
-    def save(self, *args, **kwargs):
-        user = self.user
-        user.phone = self.phone
-        user.first_name = self.first_name
-        user.last_name = self.last_name
-        user.gender = self.gender
-        user.dateofborn = self.dateofborn
-        user.inn = self.inn
-        user.passport_id = self.passport_id
-        user.date_of_issue = self.date_of_issue
-        user.issued_by = self.issued_by
-        user.validity = self.validity
-        user.city = self.city
-        user.county = self.country
-        user.passport_front = self.passport_front
-        user.passport_back = self.passport_back
-        user.save()
+    # def save(self, *args, **kwargs):
+    #     if self.user:
+    #         user = self.user
+    #         user.phone = self.phone
+    #         user.first_name = self.first_name
+    #         user.last_name = self.last_name
+    #         user.gender = self.gender
+    #         user.dateofborn = self.dateofborn
+    #         user.inn = self.inn
+    #         user.passport_id = self.passport_id
+    #         user.date_of_issue = self.date_of_issue
+    #         user.issued_by = self.issued_by
+    #         user.validity = self.validity
+    #         user.city = self.city
+    #         user.county = self.country
+    #         user.passport_front = self.passport_front
+    #         user.passport_back = self.passport_back
+    #         user.save()
 
-        super(RequestTour, self).save(*args, **kwargs)
+    #     super(RequestTour, self).save(*args, **kwargs)
     
     def deadline(self):
         deadline = self.created_at + timedelta(days=10)
@@ -195,10 +197,10 @@ class RequestTour(models.Model):
         verbose_name_plural = _("Заявки")
 
 
-@receiver(post_save, sender=RequestTour)
-def add_request(sender, instance, created, **kwargs):
-    if created:
-        add_lead_on_creation(sender, instance)
+# @receiver(post_save, sender=RequestTour)
+# def add_request(sender, instance, created, **kwargs):
+#     if created:
+#         add_lead_on_creation(sender, instance)
 
 
 class Document(models.Model):
