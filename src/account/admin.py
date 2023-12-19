@@ -124,6 +124,7 @@ class TourRequestAdmin(admin.ModelAdmin):
         "status",
         "phone",
         "created_at",
+        "user"
     )
     list_editable = ("status",)
     list_filter = ("status",)

@@ -32,8 +32,8 @@ class PaymentsSerializer(serializers.ModelSerializer):
 class RegisterAPIViewSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(
         required=True,
-        min_length=8,
-        error_messages={"min_length": "Не менее 8 символов."},
+        min_length=4,
+        error_messages={"min_length": "Не менее 4 символов."},
     )
 
     class Meta:
@@ -70,9 +70,9 @@ class LoginSerializer(serializers.Serializer):
     )
     password = serializers.CharField(
         write_only=True,
-        min_length=8,
+        min_length=4,
         required=True,
-        error_messages={"min_length": "Не менее 8 символов."},
+        error_messages={"min_length": "Не менее 4 символов."},
     )
     token = serializers.CharField(read_only=True)
     # email = serializers.EmailField(

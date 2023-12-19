@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from .services import add_request, add_client
 from django.conf import settings
 from src.account.models import RequestTour, User
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class CreateRequest(models.Model):
@@ -34,14 +35,23 @@ class CreateRequest(models.Model):
 
         data = res.json()["lead"][0]
 
-        print(data)
+        if not data["client_id"]:
+            res = requests.get(f"https://api.u-on.ru/{settings.KEY}/lead/{self.request_id}.json")
 
-        # user = User.objects.get(tourist_id=data["client_id"])
+            data = res.json()["lead"][0]
 
-        # print(data["client_id"])
+        try:
+            user = User.objects.get(tourist_id=data["client_id"])
+        except ObjectDoesNotExist:
+            user = None
+
+        if user:
+            issued_by = user.issued_by
+        else:
+            issued_by = ""
 
         obj = RequestTour(
-            # user=user,
+            user=user,
             status=1,
             first_name=data["client_name"],
             last_name=data["client_surname"],
@@ -52,7 +62,7 @@ class CreateRequest(models.Model):
             inn=data["client_inn"],
             passport_id="",
             date_of_issue="2020-12-12",
-            issued_by="user.issued_by",
+            issued_by=issued_by,
             validity="2020-12-12",
             instagram=data["instagram"],
             tourid="0",
@@ -78,6 +88,9 @@ class CreateClient(models.Model):
     class Meta:
         verbose_name = _("Клиент CRM")
         verbose_name_plural = _("Клиенты CRM")
+
+    def save(self, *args, **kwargs):
+        return super().save(*args, **kwargs)
 
 
 # @receiver(post_save, sender=CreateRequest)
