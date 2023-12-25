@@ -1,3 +1,4 @@
+import requests
 from datetime import datetime
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -40,11 +41,16 @@ class TourRequestView(generics.CreateAPIView):
                 price_word = num2words(int(tour_request.price), lang="ru")
                 surcharge_word = num2words(int(tour_request.surcharge), lang="ru")
 
+                tour = requests.get(f"https://hit-travel.org/api/detail/tour/{tour_id}")
+
                 context = {
                     "obj": tour_request,
                     "date": date,
                     "price_word": price_word,
                     "surcharge_word": surcharge_word,
+                    "operatorname": tour.json()["tour"]["operatorname"],
+                    "flydate": tour.json()["tour"]["flydate"],
+                    "nights": tour.json()["tour"]["nights"],
                 }
 
                 template = get_template("index.html")

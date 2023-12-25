@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .services import add_request, add_client
 from django.conf import settings
-from src.account.models import RequestTour, User
+from src.account.models import RequestTour, User, Traveler
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -26,29 +26,24 @@ class CreateRequest(models.Model):
 
     def save(self, *args, **kwargs):
         time.sleep(30)
-        url = f"https://api.u-on.ru/{settings.KEY}/lead/{self.request_id}.json"
+        url = f"https://api.u-on.ru/{settings.KEY}/request/{self.request_id}.json"
 
         res = requests.get(url)
 
         if res.status_code != 200:
             return False
 
-        data = res.json()["lead"][0]
+        data = res.json()["request"][0]
 
         if not data["client_id"]:
-            res = requests.get(f"https://api.u-on.ru/{settings.KEY}/lead/{self.request_id}.json")
+            res = requests.get(f"https://api.u-on.ru/{settings.KEY}/request/{self.request_id}.json")
 
-            data = res.json()["lead"][0]
+            data = res.json()["request"][0]
 
         try:
             user = User.objects.get(tourist_id=data["client_id"])
         except ObjectDoesNotExist:
             user = None
-
-        if user:
-            issued_by = user.issued_by
-        else:
-            issued_by = ""
 
         obj = RequestTour(
             user=user,
@@ -62,7 +57,7 @@ class CreateRequest(models.Model):
             inn=data["client_inn"],
             passport_id="",
             date_of_issue="2020-12-12",
-            issued_by=issued_by,
+            issued_by="1",
             validity="2020-12-12",
             instagram=data["instagram"],
             tourid="0",
@@ -71,6 +66,11 @@ class CreateRequest(models.Model):
         )
 
         obj.save()
+
+        if data["tourists"]:
+            for i in data["tourists"]:
+                tourist = Traveler(first_name=i["u_name"], last_name=i["u_surname"], main=obj)
+                tourist.save()
 
         super(CreateRequest, self).save(*args, **kwargs)
 

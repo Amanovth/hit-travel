@@ -107,6 +107,7 @@ class UserAdmin(UserAdmin):
 class TravelersInline(admin.StackedInline):
     model = Traveler
     extra = 0
+    fields = ["first_name", "last_name"]
 
 
 class DocumentsInline(admin.StackedInline):

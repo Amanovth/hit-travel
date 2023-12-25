@@ -136,6 +136,37 @@
             text-align: center;
         }
 
+        .block_blue {
+            width: 100%;
+            padding: 4px;
+            background: var(--blue);
+        }
+
+        .title_white {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .text_white {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--white);
+        }
+
+        .bold {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .regular {
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--black);
+        }
     </style>
 </head>
 
@@ -173,7 +204,7 @@
             </table>
         </div>
         <div class="body">
-            <div class="box" >
+            <div class="box">
                 <h1 class="white_big">
                     ДОГОВОР
                 </h1>
@@ -199,7 +230,8 @@
                     стороны, и гражда (нин/ка), <span>{{obj.first_name}} {{obj.last_name}}</span> действующий/ая на
                     основании
                     паспорта <span>ИНН {{obj.inn}}, ID пасспорта {{obj.passport_id}}</span>,
-                    выданный <span>{{obj.issued_by}}</span> от <span>{{obj.date_of_issue}}</span>,именуем (ый/ая) в дальнейшем «Турист», с другой стороны,
+                    выданный <span>{{obj.issued_by}}</span> от <span>{{obj.date_of_issue}}</span>,именуем (ый/ая) в
+                    дальнейшем «Турист», с другой стороны,
                     вместе именуемые «Стороны»,
                     исходя из того, что Турист желает посетить страну для временного пребывания в
                     лечебно-оздоровительных, рекреационных, познавательных, физкультурно-спортивных,
@@ -268,7 +300,8 @@
                         долларах США или Евро путем внесения наличных денежных средств в кассу Турагентства в следующем
                         порядке: <span>
                             {{obj.price}} {{obj.currency}} ({{price_word}} {{obj.currency}},
-                            дополнительная сумма: {{obj.surcharge}} {{obj.currency}},  {{surcharge_word}} {{obj.currency}})
+                            дополнительная сумма: {{obj.surcharge}} {{obj.currency}},  {{surcharge_word}}
+                            {{obj.currency}})
                         </span>  которая включает все налоги, сборы и отчисления, предусмотренные законодательством
                         Кыргызской Республики.
                     </li>
@@ -796,6 +829,165 @@
                     </td>
                 </tr>
             </table>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="block_blue">
+            <h1 class="title_white">
+                СПЕЦИФИКАЦИЯ
+            </h1>
+            <p class="text_white">информация о потребительских свойствах Туристского продукта</p>
+        </div>
+        <div style="margin-top: 10px; display: flex; justify-content: center;"> Таблица 1.</div>
+
+        <div style="border: 1px solid var(--black); margin-top: 20px;">
+            <table style="border-collapse: collapse; width: 100%;">
+                <tr style="background: var(--blue);">
+                    <th>
+                        <div style="padding: 4px;">
+                            <h1 class="white">Фамилия Имя Отчество Туристов</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">№ Паспорта</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Дата рождения</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Гражданство Туристов</h1>
+                        </div>
+                    </th>
+                </tr>
+            </table>
+            <div style="border-top: 1px solid var(--black); padding: 4px;">
+                <p class="bold">{{obj.first_name}} {{obj.last_name}}</p>
+                <p class="regular">{информация по авиаперелетам}</p>
+                <p class="regular">{{operatorname}}</p>
+                <p class="bold">Заселение с 14:00 до 15:00</p>
+                <p class="bold">Выселение до 12:00</p>
+            </div>
+            <table style="border-collapse: collapse; width: 100%; border-top: 1px solid var(--black);">
+                <tr style="background: var(--blue);">
+                    <th>
+                        <div style="padding: 4px;">
+                            <h1 class="white">{{flydate}} - {{nights}} ночей
+                            </h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Категория отеля</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Тип номера</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Питание</h1>
+                        </div>
+                    </th>
+                </tr>
+            </table>
+            <div style="border-top: 1px solid var(--black); padding: 4px;">
+                <p class="regular">{информация по трансферам} </p>
+                <p class="regular">{информация по визам}</p>
+                <p class="regular">{информация по отелям}</p>
+                <p class="regular">{информация по страховке}</p>
+                <p class="regular">{отели заявки, с категорией по звездам}</p>
+            </div>
+        </div>
+        <p class="bold">
+            Общая цена Туристического продукта составляет {{obj.price}} {{obj.currency}}, {{price_word}} {{obj.currency}}
+        </p>
+
+        <table style="border-collapse: collapse; border: 1px solid var(--black); margin-top: 20px; width: 100%;">
+            <tr>
+                <td>
+                    <div style="padding: 4px;">
+                        <span>Турагентство</span>
+                        <p>Генеральный директор ОсОО «Хит-Трэвел»</p>
+                        <p>К.М.Гусейнов</p>
+                        <span>________________</span>
+                        <p style="font-size: 12px;">(подпись) МП</p>
+                    </div>
+                </td>
+                <td>
+                    <div style="padding: 4px; border-left: 1px solid var(--black);">
+                        <span>Турист</span>
+                        <p>{{obj.first_name}} {{obj.last_name}}</p>
+                        <br>
+                        <p>__________________________________</p>
+                        <p style="font-size: 12px;">(подпись) МП</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <p style="text-align: end; margin-top: 10px;">
+            <mark class="bold">Приложение №2 к Договору № {{obj.request_number}} </mark>
+            от {{date}}
+        </p>
+
+        <div style="margin-top: 20px;" class="block_blue">
+            <h1 class="title_white">
+                АКТ
+            </h1>
+            <p class="text_white">приема-передачи документов для оформления Туристического продукта</p>
+        </div>
+        <div style="margin-top: 10px; display: flex; justify-content: center;">
+            <p style="text-align: center;">
+                от {{date}}.
+                Мы, нижеподписавшиеся, представитель <span class="bold">Турагентства</span> (ОсОО "Хит-Трэвел"),Гусейнов
+                К.М. с одной
+                стороны
+                и <span class="bold">Турист {{obj.first_name}} {{obj.last_name}}</span> с другой стороны составили настоящий АКТ о том, что
+                Турист передал, а
+                Турагентство приняло в рамках Договора 
+                <mark class="bold">№ {{obj.request_number}} от</mark> {{date}} следующие документы
+                для
+                оформления Туристического продукта:
+            </p>
+        </div>
+        <div style="border: 1px solid var(--black); margin-top: 20px;">
+            <table style="border-collapse: collapse; width: 100%;">
+                <tr style="background: var(--blue);">
+                    <th>
+                        <div style="padding: 4px;">
+                            <h1 class="white">Отметка о наличии док-та</h1>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Перечень документов для оформления Туристического продукта</h1>
+                            <ul>
+                                <li>Копии действующих заграничных паспортов туристов</li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th>
+                        <div style="padding: 4px; border-left: 1px solid var(--black);">
+                            <h1 class="white">Отметка об отсутствии док-та</h1>
+                            <br>
+                        </div>
+                    </th>
+                </tr>
+            </table>
+            <div style="border-top: 1px solid var(--black); padding: 4px;">
+                <p class="bold">Вышеуказанные документы для оформления Туристического продукта должны быть предоставлены
+                    Туристом в Турагентство и сданы по настоящему АКТУ до {deadline по оплате}., включительно. Настоящий
+                    Договор считается расторгнутым, если отсутствующие документы Турист не предоставит Турагентству до
+                    {deadline по оплате} </p>
+            </div>
         </div>
     </div>
 </body>

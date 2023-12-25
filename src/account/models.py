@@ -224,10 +224,10 @@ class Traveler(models.Model):
     )
     
     main = models.ForeignKey(RequestTour, on_delete=models.CASCADE, related_name="travelers")
-    dateofborn = models.DateField(_("Дата рождения"))
+    dateofborn = models.DateField(_("Дата рождения"), null=True, blank=True)
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)
-    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3)
+    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3, null=True, blank=True)
         
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
