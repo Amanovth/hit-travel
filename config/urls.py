@@ -11,9 +11,8 @@ urlpatterns = [
     path("", include("src.search.urls")),
     path("", include("src.main.urls")),
     path("", include("src.bus_tours.urls")),
-    path("webhook/", include("src.webhooks.urls")),
+    # path("webhook/", include("src.webhooks.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
-    # path("__debug__/", include("debug_toolbar.urls")),
 ]
 
 urlpatterns += doc_urlpatterns

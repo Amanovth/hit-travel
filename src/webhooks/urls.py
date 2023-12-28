@@ -6,7 +6,7 @@ from .views import (
 )
 
 
-urlpatterns = [
-    path("create_request", CreateRequestView.as_view(), name="create_request"),
-    path("create_client", CreateClientView.as_view(), name="create_client")
-]
+# urlpatterns = [
+#     path("create_request", CreateRequestView.as_view(), name="create_request"),
+#     path("create_client", CreateClientView.as_view(), name="create_client"),
+# ]

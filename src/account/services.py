@@ -1,6 +1,9 @@
 import requests
+import string
+from random import choices
 from django.conf import settings
 from datetime import datetime, timedelta
+from src.base.utils import Util
 
 KEY = settings.KEY
 AUTHLOGIN = settings.AUTHLOGIN
@@ -168,37 +171,6 @@ def increase_bonuses(bcard_id, bonuses, reason):
     return True
 
 
-def add_tourist_on_user_creation(sender, instance):
-    url = f"https://api.u-on.ru/{KEY}/user/create.json"
-
-    data = {
-        "u_surname": instance.last_name,
-        "u_name": instance.first_name,
-        "u_email": instance.email,
-        "u_phone_mobile": instance.phone,
-        "u_birthday": instance.dateofborn,
-        "u_inn": instance.inn,
-        "u_zagran_number": instance.inn,
-        "u_zagran_given": instance.date_of_issue,
-        "u_zagran_expire": instance.validity,
-        "u_zagran_organization": instance.issued_by,
-        "u_birthday_place": f"{instance.city} {instance.county}"
-    }
-
-    res = requests.post(url, data)
-
-    if res.status_code != 200:
-        return False
-    
-    instance.tourist_id = res.json()["id"]
-    instance.is_verified = True
-    instance.save()
-
-    bonus_card_create(instance)
-
-    return
-
-
 def add_lead_on_creation(sender, instance):
     url = f"https://api.u-on.ru/{KEY}/lead/create.json"
 
@@ -217,3 +189,63 @@ def add_lead_on_creation(sender, instance):
     }
 
     res = requests.post(url, data)
+
+
+def send_password_to_user(instance, password):
+    email_body = (
+        f"Привет! {instance.last_name} {instance.first_name}\n\n"
+        f"Чтобы войти в нашу систему, используйте этот адрес электронной почты и пароль:\n\n"
+        f"{instance.email}\n"
+        f"{password}"
+    )
+
+    email_data = {
+        "email_body": email_body,
+        "email_subject": "Подтвердите регистрацию",
+        "to_email": instance.email,
+    }
+
+    Util.send_email(email_data)
+
+
+def add_tourist_on_user_creation(sender, instance):
+    url = f"https://api.u-on.ru/{KEY}/user/create.json"
+
+    data = {
+        "u_surname": instance.last_name,
+        "u_name": instance.first_name,
+        "u_sname": instance.surname,
+        "u_email": instance.email,
+        "u_phone_mobile": instance.phone,
+        "u_birthday": instance.dateofborn,
+        "u_inn": instance.inn,
+        "u_zagran_number": instance.inn,
+        "u_zagran_given": instance.date_of_issue,
+        "u_zagran_expire": instance.validity,
+        "u_zagran_organization": instance.issued_by,
+        "u_birthday_place": f"{instance.city} {instance.county}",
+        "u_password": instance.password_readable,
+        "u_sex": instance.gender,
+        "u_social_vk": instance.u_social_vk,
+        "u_social_fb": instance.u_social_fb,
+        "u_social_ok": instance.u_social_ok,
+        "u_telegram": instance.u_telegram,
+        "u_whatsapp": instance.u_whatsapp,
+        "u_viber": instance.u_viber,
+        "u_instagram": instance.u_instagram,
+    }
+
+    res = requests.post(url, data)
+
+    if res.status_code != 200:
+        return False
+    
+    instance.tourist_id = res.json()["id"]
+    instance.is_verified = True
+    instance.save()
+
+    send_password_to_user(instance, instance.password_readable)
+
+    bonus_card_create(instance)
+
+    return

@@ -34,6 +34,8 @@ class UserAdmin(UserAdmin):
                     "phone",
                     "first_name",
                     "last_name",
+                    "first_name_en",
+                    "last_name_en",
                     "dateofborn",
                     "photo",
                     "county",
@@ -45,6 +47,20 @@ class UserAdmin(UserAdmin):
                     "city",
                     "passport_front",
                     "passport_back",
+                )
+            },
+        ),
+        (
+            _("Социальные сети"),
+            {
+                "fields": (
+                    "u_social_vk",
+                    "u_social_fb",
+                    "u_social_ok",
+                    "u_telegram",
+                    "u_whatsapp",
+                    "u_viber",
+                    "u_instagram"
                 )
             },
         ),
@@ -76,6 +92,7 @@ class UserAdmin(UserAdmin):
                     "phone",
                     "first_name",
                     "last_name",
+                    "surname",
                     "dateofborn",
                     "inn",
                     "passport_id",
@@ -84,6 +101,13 @@ class UserAdmin(UserAdmin):
                     "date_of_issue",
                     "validity",
                     "issued_by",
+                    "u_social_vk",
+                    "u_social_fb",
+                    "u_social_ok",
+                    "u_telegram",
+                    "u_whatsapp",
+                    "u_viber",
+                    "u_instagram",
                     "password1",
                     "password2",
                 ),

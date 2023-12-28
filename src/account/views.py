@@ -447,13 +447,13 @@ class SetNewPasswordAPIView(views.APIView):
                     {"response": False, "message": _("Старый пароль неверен!")}
                 )
 
-            if not check_password(new_password, user.password):
-                return Response(
-                    {
-                        "response": False,
-                        "message": _("Новый пароль не может быть похожим на старый"),
-                    }
-                )
+            # if not check_password(new_password, user.password):
+            #     return Response(
+            #         {
+            #             "response": False,
+            #             "message": _("Новый пароль не может быть похожим на старый"),
+            #         }
+            #     )
 
             user.set_password(new_password)
             user.save()

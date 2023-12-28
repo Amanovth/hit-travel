@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "src.search",
     "src.main",
     "src.bus_tours",
-    "src.webhooks",
+    # "src.webhooks",
 ]
 
 MIDDLEWARE = [

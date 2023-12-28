@@ -14,5 +14,5 @@ class CurrencyAdmin(admin.ModelAdmin):
     list_display_links = ("id", "currency",)
 
 
-admin.site.unregister(Group)
+# admin.site.unregister(Group)
 # admin.site.unregister(TokenProxy)
