@@ -211,6 +211,9 @@ def send_password_to_user(instance, password):
 def add_tourist_on_user_creation(sender, instance):
     url = f"https://api.u-on.ru/{KEY}/user/create.json"
 
+    if instance.groups:
+        return
+
     data = {
         "u_surname": instance.last_name,
         "u_name": instance.first_name,
@@ -226,13 +229,6 @@ def add_tourist_on_user_creation(sender, instance):
         "u_birthday_place": f"{instance.city} {instance.county}",
         "u_password": instance.password_readable,
         "u_sex": instance.gender,
-        "u_social_vk": instance.u_social_vk,
-        "u_social_fb": instance.u_social_fb,
-        "u_social_ok": instance.u_social_ok,
-        "u_telegram": instance.u_telegram,
-        "u_whatsapp": instance.u_whatsapp,
-        "u_viber": instance.u_viber,
-        "u_instagram": instance.u_instagram,
     }
 
     res = requests.post(url, data)
@@ -249,3 +245,9 @@ def add_tourist_on_user_creation(sender, instance):
     bonus_card_create(instance)
 
     return
+
+
+def create_managers():
+    url = "https://api.u-on.ru/RxH3WeM378er81w4dMuF1649063416/manager.json"
+
+    # response = 

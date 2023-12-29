@@ -1,12 +1,21 @@
+from typing import Any
+from django import forms
 from django.contrib import admin
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin
 from .models import *
 
 
-class BonusHistory(admin.StackedInline):
-    model = BonusHistory
-    extra = 0
+class UserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+class UserCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = '__all__'
 
 
 @admin.register(User)
@@ -19,10 +28,6 @@ class UserAdmin(UserAdmin):
                     "email",
                     "password",
                     "tourist_id",
-                    "manager_id",
-                    "balance",
-                    "bonuses",
-                    # "bcard_number",
                     "bcard_id",
                 )
             },
@@ -51,27 +56,13 @@ class UserAdmin(UserAdmin):
             },
         ),
         (
-            _("Социальные сети"),
-            {
-                "fields": (
-                    "u_social_vk",
-                    "u_social_fb",
-                    "u_social_ok",
-                    "u_telegram",
-                    "u_whatsapp",
-                    "u_viber",
-                    "u_instagram"
-                )
-            },
-        ),
-        (
             _("Permissions"),
             {
                 "fields": (
                     "is_active",
                     "is_staff",
                     "is_superuser",
-                    "groups",
+                    "groups", 
                     "user_permissions",
                 ),
             },
@@ -79,7 +70,7 @@ class UserAdmin(UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         (
             _("Верификация"),
-            {"fields": ("is_verified", "verification_code", "verification_code_time")},
+            {"fields": ("is_verified", "verification_code",)},
         ),
     )
     add_fieldsets = (
@@ -88,11 +79,15 @@ class UserAdmin(UserAdmin):
             {
                 "classes": ("wide",),
                 "fields": (
+                    "groups",
+                    "is_staff",
                     "email",
                     "phone",
                     "first_name",
                     "last_name",
                     "surname",
+                    "password1",
+                    "password2",
                     "dateofborn",
                     "inn",
                     "passport_id",
@@ -101,20 +96,13 @@ class UserAdmin(UserAdmin):
                     "date_of_issue",
                     "validity",
                     "issued_by",
-                    "u_social_vk",
-                    "u_social_fb",
-                    "u_social_ok",
-                    "u_telegram",
-                    "u_whatsapp",
-                    "u_viber",
-                    "u_instagram",
-                    "password1",
-                    "password2",
                 ),
             },
         ),
     )
 
+    form = UserChangeForm
+    add_form = UserCreationForm
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
     search_fields = (
@@ -126,6 +114,14 @@ class UserAdmin(UserAdmin):
         "bcard_number",
     )
     ordering = ("-id",)
+    filter_horizontal = ()
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if not request.user.is_superuser:
+            for fieldset in fieldsets:
+                fieldset[1]['fields'] = [field for field in fieldset[1]['fields'] if field not in ['groups', 'is_staff']]
+        return fieldsets
 
 
 class TravelersInline(admin.StackedInline):
@@ -139,8 +135,21 @@ class DocumentsInline(admin.StackedInline):
     extra = 0
 
 
+class TourRequestAdminForm(forms.ModelForm):
+    class Meta:
+        model = RequestTour
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Pre-fill the 'first_name' field based on the selected user
+        if self.instance and self.instance.user:
+            self.fields['first_name'].initial = self.instance.user.first_name
+
+
 @admin.register(RequestTour)
 class TourRequestAdmin(admin.ModelAdmin):
+    # form = TourRequestAdminForm
     list_display = (
         "id",
         "first_name",
@@ -159,12 +168,6 @@ class TourRequestAdmin(admin.ModelAdmin):
         TravelersInline,
         DocumentsInline,
     )
-
-    # def get_fio(self, object):
-    #     if object.user:
-    #         return f"{object.user.first_name} {object.user.last_name}"
-
-    # get_fio.short_description = "ФИО"
 
     fieldsets = (
         (
@@ -215,10 +218,10 @@ class TourRequestAdmin(admin.ModelAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "user",
-                    "price",
-                    "currency",
-                    "tourid",
-                    "surcharge",
+                    # "price",
+                    # "currency",
+                    # "tourid",
+                    # "surcharge",
                     "first_name",
                     "last_name",
                     "gender",
@@ -232,10 +235,12 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "issued_by",
                     "city",
                     "country",
-                    "passport_front",
-                    "passport_back"
                 ),
             },
+        ),
+        (
+            _("Информация о туре"),
+            {"fields": ("operatorlink", "tourid", "price", "currency", "surcharge")},
         ),
     )
 
@@ -243,6 +248,26 @@ class TourRequestAdmin(admin.ModelAdmin):
         if not obj:
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
+
+    autocomplete_fields = ("user", )
+
+    
+
+
+
+    # def save_model(self, request, obj, form, change):
+    #     obj.user = request.user
+    #     if obj.user:
+    #         obj.first_name = obj.user.first_name
+    #         obj.last_name = obj.user.last_name
+    #         obj.phone = obj.user.phone 
+    #         obj.email = obj.user.email
+    #         obj.gender = obj.user.profile.gender
+    #         obj.dateofborn = obj.user.dateofborn 
+
+    #     obj.save()
+    
+
 
 
 @admin.register(Payments)

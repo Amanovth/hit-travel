@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 from django.dispatch import receiver
@@ -17,9 +17,23 @@ class User(AbstractUser):
         ("м", "Муж"),
         ("ж", "Жен")
     )
+
+    groups = models.ForeignKey(
+        Group,
+        verbose_name=_("groups"),
+        null=True,
+        blank=True,
+        help_text=_(
+            "The groups this user belongs to. A user will get all permissions "
+            "granted to each of their groups."
+        ),
+        related_name="user_set",
+        related_query_name="user",
+        on_delete=models.SET_NULL
+    )
     username = None
-    balance = models.DecimalField(_("Balance"), default=0, max_digits=10, decimal_places=2)
-    bonuses = models.DecimalField(_("Bonuses"), default=0, max_digits=10, decimal_places=2)
+    # balance = models.DecimalField(_("Balance"), default=0, max_digits=10, decimal_places=2)
+    # bonuses = models.DecimalField(_("Bonuses"), default=0, max_digits=10, decimal_places=2)
     email = models.EmailField(_("Email"), unique=True)
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
@@ -49,21 +63,11 @@ class User(AbstractUser):
     passport_id = models.CharField(_("Загран паспорт"), max_length=8, null=True, blank=True, unique=True)
     county = models.CharField(_("Страна"), max_length=100, null=True, blank=True)
     tourist_id = models.IntegerField(_("ID Туриста"), null=True, blank=True)
-    manager_id = models.IntegerField(_("ID менеджера"), null=True, blank=True)
     bcard_number = models.CharField(_("Номер бонусного счёта"), max_length=255, null=True, blank=True)
     bcard_id = models.IntegerField(_("ID бонусного счёта"), null=True, blank=True)
     created = models.IntegerField(null=True, blank=True, default=1)
     first_name_en = models.CharField(_("Имя на латинице"), max_length=150, null=True, blank=True)
     last_name_en = models.CharField(_("Фамилия на латинице"), max_length=150, null=True, blank=True)
-
-    # Social
-    u_social_vk = models.URLField(_("Аккаунт Вконтакте"), max_length=255, null=True, blank=True)
-    u_social_fb = models.URLField(_("Аккаунт Facebook"), max_length=255, null=True, blank=True)
-    u_social_ok = models.URLField(_("Аккаунт Одноклассники"), max_length=255, null=True, blank=True)
-    u_telegram = models.URLField(_("Аккаунт Telegram"), max_length=255, null=True, blank=True)
-    u_whatsapp = models.URLField(_("Аккаунт Whatsapp"), max_length=255, null=True, blank=True)
-    u_viber = models.URLField(_("Аккаунт Viber"), max_length=255, null=True, blank=True)
-    u_instagram = models.URLField(_("Аккаунт Instagram"), max_length=255, null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -113,8 +117,8 @@ class BonusHistory(models.Model):
 
 class RequestTour(models.Model):
     GENDER_CHOICES = (
-        ("Муж", "Муж"),
-        ("Жен", "Жен")
+        ("м", "Муж"),
+        ("ж", "Жен")
     )
     STATUS_CHOICES = (
         (1, "Новая заявка"),
@@ -122,8 +126,8 @@ class RequestTour(models.Model):
         (3, "Тур куплен"),
         (4, "Отклонено"),
     )
-    
-    user = models.ForeignKey(User, verbose_name=_("Пользователь"), on_delete=models.CASCADE, null=True, blank=True)
+
+    user = models.ForeignKey(User, verbose_name=_("Клиент"), on_delete=models.CASCADE, null=True, blank=True)
     status = models.IntegerField(_("Статус"), choices=STATUS_CHOICES, default=2)
     request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
     
@@ -189,10 +193,10 @@ class RequestTour(models.Model):
         verbose_name_plural = _("Заявки")
 
 
-# @receiver(post_save, sender=RequestTour)
-# def add_request(sender, instance, created, **kwargs):
-#     if created:
-#         add_lead_on_creation(sender, instance)
+@receiver(post_save, sender=RequestTour)
+def add_request(sender, instance, created, **kwargs):
+    if created:
+        add_lead_on_creation(sender, instance)
 
 
 class Document(models.Model):
