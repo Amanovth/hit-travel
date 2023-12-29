@@ -1,13 +1,26 @@
 import requests
-import string
-from random import choices
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timedelta
 from src.base.utils import Util
 
 KEY = settings.KEY
 AUTHLOGIN = settings.AUTHLOGIN
 AUTHPASS = settings.AUTHPASS
+
+
+permissions = (
+    _("Permissions"),
+    {
+        "fields": (
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "groups",
+            "user_permissions",
+        ),
+    },
+)
 
 
 def update_user(data, user):
@@ -120,7 +133,7 @@ def create_lead(data, user):
         "u_phone": data["phone"],
         "u_email": data["email"],
         "note": note,
-        "source": "Мобильное приложение"
+        "source": "Мобильное приложение",
     }
 
     res = requests.post(url, data=r_data)
@@ -185,7 +198,7 @@ def add_lead_on_creation(sender, instance):
         "u_phone": instance.phone,
         "u_email": instance.email,
         "note": note,
-        "source": "Мобильное приложение"
+        "source": "Мобильное приложение",
     }
 
     res = requests.post(url, data)
@@ -235,7 +248,7 @@ def add_tourist_on_user_creation(sender, instance):
 
     if res.status_code != 200:
         return False
-    
+
     instance.tourist_id = res.json()["id"]
     instance.is_verified = True
     instance.save()
@@ -250,4 +263,4 @@ def add_tourist_on_user_creation(sender, instance):
 def create_managers():
     url = "https://api.u-on.ru/RxH3WeM378er81w4dMuF1649063416/manager.json"
 
-    # response = 
+    # response =

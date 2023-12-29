@@ -5,22 +5,25 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin
 from .models import *
-
-
-class UserChangeForm(UserChangeForm):
-    class Meta:
-        model = User
-        fields = '__all__'
-
-class UserCreationForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = '__all__'
+from .services import permissions
 
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
-    fieldsets = (
+    list_display = ("id", "email", "first_name", "last_name", "is_staff")
+    list_display_links = ("id", "email")
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "passport_id",
+        "bcard_number",
+    )
+    ordering = ("-id",)
+    filter_horizontal = ()
+
+    fieldsets = [
         (
             None,
             {
@@ -55,24 +58,17 @@ class UserAdmin(UserAdmin):
                 )
             },
         ),
-        (
-            _("Permissions"),
-            {
-                "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                    "groups", 
-                    "user_permissions",
-                ),
-            },
-        ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         (
             _("Верификация"),
-            {"fields": ("is_verified", "verification_code",)},
+            {
+                "fields": (
+                    "is_verified",
+                    "verification_code",
+                )
+            },
         ),
-    )
+    ]
     add_fieldsets = (
         (
             None,
@@ -101,26 +97,18 @@ class UserAdmin(UserAdmin):
         ),
     )
 
-    form = UserChangeForm
-    add_form = UserCreationForm
-    list_display = ("id", "email", "first_name", "last_name", "is_staff")
-    list_display_links = ("id", "email")
-    search_fields = (
-        "first_name",
-        "last_name",
-        "email",
-        "phone",
-        "passport_id",
-        "bcard_number",
-    )
-    ordering = ("-id",)
-    filter_horizontal = ()
-
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
         if not request.user.is_superuser:
             for fieldset in fieldsets:
-                fieldset[1]['fields'] = [field for field in fieldset[1]['fields'] if field not in ['groups', 'is_staff']]
+                fieldset[1]["fields"] = [
+                    field
+                    for field in fieldset[1]["fields"]
+                    if field not in ["groups", "is_staff"]
+                ]
+
+        if request.user.is_superuser:
+            fieldsets.append(permissions)
         return fieldsets
 
 
@@ -135,21 +123,8 @@ class DocumentsInline(admin.StackedInline):
     extra = 0
 
 
-class TourRequestAdminForm(forms.ModelForm):
-    class Meta:
-        model = RequestTour
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Pre-fill the 'first_name' field based on the selected user
-        if self.instance and self.instance.user:
-            self.fields['first_name'].initial = self.instance.user.first_name
-
-
 @admin.register(RequestTour)
 class TourRequestAdmin(admin.ModelAdmin):
-    # form = TourRequestAdminForm
     list_display = (
         "id",
         "first_name",
@@ -158,7 +133,7 @@ class TourRequestAdmin(admin.ModelAdmin):
         "status",
         "phone",
         "created_at",
-        "user"
+        "user",
     )
     list_editable = ("status",)
     list_filter = ("status",)
@@ -188,7 +163,7 @@ class TourRequestAdmin(admin.ModelAdmin):
                     "country",
                     "bonuses",
                     "agreement",
-                    "instagram"
+                    "instagram",
                 )
             },
         ),
@@ -218,10 +193,6 @@ class TourRequestAdmin(admin.ModelAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "user",
-                    # "price",
-                    # "currency",
-                    # "tourid",
-                    # "surcharge",
                     "first_name",
                     "last_name",
                     "gender",
@@ -248,26 +219,6 @@ class TourRequestAdmin(admin.ModelAdmin):
         if not obj:
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
-
-    autocomplete_fields = ("user", )
-
-    
-
-
-
-    # def save_model(self, request, obj, form, change):
-    #     obj.user = request.user
-    #     if obj.user:
-    #         obj.first_name = obj.user.first_name
-    #         obj.last_name = obj.user.last_name
-    #         obj.phone = obj.user.phone 
-    #         obj.email = obj.user.email
-    #         obj.gender = obj.user.profile.gender
-    #         obj.dateofborn = obj.user.dateofborn 
-
-    #     obj.save()
-    
-
 
 
 @admin.register(Payments)
