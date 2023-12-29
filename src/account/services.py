@@ -1,7 +1,11 @@
 import requests
+import pdfkit
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from django.template.loader import get_template
+from django.core.files.base import ContentFile
 from datetime import datetime, timedelta
+from num2words import num2words
 from src.base.utils import Util
 
 KEY = settings.KEY
@@ -84,12 +88,46 @@ def bonus_card_create(user):
     return True
 
 
-def create_service(data, user, request_number):
+def create_dogovor(instance):
+    date = datetime.now().strftime("%d.%m.%Y %H:%M")
+    price_word = num2words(int(instance.price), lang="ru")
+    surcharge_word = num2words(int(instance.surcharge), lang="ru")
+
+    tour = requests.get(f"https://hit-travel.org/api/detail/tour/{instance.tourid}")
+
+    context = {
+        "obj": instance,
+        "date": date,
+        "price_word": price_word,
+        "surcharge_word": surcharge_word,
+        "operatorname": tour.json()["tour"]["operatorname"],
+        "flydate": tour.json()["tour"]["flydate"],
+        "nights": tour.json()["tour"]["nights"],
+    }
+
+    template = get_template("index.html")
+    html = template.render(context)
+
+    pdf = pdfkit.from_string(html, False)
+
+    instance.agreement.save(
+        f"agreement_pdf_{instance.request_number}.pdf",
+        ContentFile(pdf),
+        save=True,
+    )
+
+
+def create_service(request_number, data=None, instance=None):
     url = f"https://api.u-on.ru/{KEY}/service/create.json"
 
-    tour = requests.get(
-        f"http://tourvisor.ru/xml/actualize.php?authlogin={AUTHLOGIN}&authpass={AUTHPASS}&format=json&tourid={data['tourid']}"
-    )
+    if data:
+        tour = requests.get(
+            f"http://tourvisor.ru/xml/actualize.php?authlogin={AUTHLOGIN}&authpass={AUTHPASS}&format=json&tourid={data['tourid']}"
+        )
+    if instance:
+        tour = requests.get(
+            f"http://tourvisor.ru/xml/actualize.php?authlogin={AUTHLOGIN}&authpass={AUTHPASS}&format=json&tourid={instance.tourid}"
+        )
 
     tour_data = tour.json()["data"]["tour"]
 
@@ -138,7 +176,7 @@ def create_lead(data, user):
 
     res = requests.post(url, data=r_data)
 
-    create_service(data, user, res.json()["id"])
+    create_service(res.json()["id"], data=data)
 
     if res.status_code != 200:
         return False
@@ -187,6 +225,25 @@ def increase_bonuses(bcard_id, bonuses, reason):
 def add_lead_on_creation(sender, instance):
     url = f"https://api.u-on.ru/{KEY}/lead/create.json"
 
+    if instance.user:
+            user = instance.user
+            instance.email = user.email
+            instance.phone = user.phone
+            instance.first_name = user.first_name
+            instance.last_name = user.last_name
+            instance.gender = user.gender
+            instance.dateofborn = user.dateofborn
+            instance.inn = user.inn
+            instance.passport_id = user.passport_id
+            instance.date_of_issue = user.date_of_issue
+            instance.issued_by = user.issued_by
+            instance.validity = user.validity
+            instance.city = user.city
+            instance.country = user.county
+            instance.passport_front = user.passport_front
+            instance.passport_back = user.passport_back
+            instance.save()
+
     # Примечание
     note = f"Оператор: {instance.operatorlink}\n"
 
@@ -202,6 +259,13 @@ def add_lead_on_creation(sender, instance):
     }
 
     res = requests.post(url, data)
+
+    instance.request_number = res.json()["id"]
+    instance.save()
+
+    if instance.tourid:
+        create_service(res.json()["id"], instance=instance)
+        create_dogovor(instance)
 
 
 def send_password_to_user(instance, password):

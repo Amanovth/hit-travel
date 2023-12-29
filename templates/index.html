@@ -290,7 +290,7 @@
             <div class="block">
                 <ul>
                     <li><span>Стоимость настоящего Договора она же общая цена Туристического продукта составляет
-                            {{obj.price}} {{obj.currency}}, {{price_word}} {{obj.currency}}</span>, которая включает все
+                            {{obj.price}} {{obj.currency.currency}}, {{price_word}} {{obj.currency.currency}}</span>, которая включает все
                         налоги,
                         сборы и
                         отчисления, предусмотренные законодательством Кыргызской Республики.
@@ -299,9 +299,9 @@
                         Оплата производится Туристом в сомах по коммерческому курсу, установленному на день расчета, в
                         долларах США или Евро путем внесения наличных денежных средств в кассу Турагентства в следующем
                         порядке: <span>
-                            {{obj.price}} {{obj.currency}} ({{price_word}} {{obj.currency}},
-                            дополнительная сумма: {{obj.surcharge}} {{obj.currency}},  {{surcharge_word}}
-                            {{obj.currency}})
+                            {{obj.price}} {{obj.currency.currency}} ({{price_word}} {{obj.currency.currency}},
+                            дополнительная сумма: {{obj.surcharge}} {{obj.currency.currency}},  {{surcharge_word}}
+                            {{obj.currency.currency}})
                         </span>  которая включает все налоги, сборы и отчисления, предусмотренные законодательством
                         Кыргызской Республики.
                     </li>
@@ -907,7 +907,7 @@
             </div>
         </div>
         <p class="bold">
-            Общая цена Туристического продукта составляет {{obj.price}} {{obj.currency}}, {{price_word}} {{obj.currency}}
+            Общая цена Туристического продукта составляет {{obj.price}} {{obj.currency.currency}}, {{price_word}} {{obj.currency.currency}}
         </p>
 
         <table style="border-collapse: collapse; border: 1px solid var(--black); margin-top: 20px; width: 100%;">
