@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Stories, StoryVideos, Versions
+from .models import Stories, StoryVideos, Versions, Currency
 
 
 class StoryVideosInline(admin.StackedInline):
@@ -18,3 +18,9 @@ class StoriesAdmin(admin.ModelAdmin):
 class VersionsAdmin(admin.ModelAdmin):
     list_display = ("version", "date",)
     list_display_links = list_display
+
+
+@admin.register(Currency)
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display = ("id", "currency", "purchase", "sell",)
+    list_display_links = ("id", "currency",)

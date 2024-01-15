@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from ..base.services import get_path_upload_photo, validate_size_image
 from .services import add_tourist_on_user_creation, add_lead_on_creation
 from .managers import UserManager
-from src.search.models import Currency
+from src.main.models import Currency
 
 class User(AbstractUser):
     GENDER_CHOICES = (
@@ -76,8 +76,8 @@ class User(AbstractUser):
 
     class Meta:
         db_table = "user"
-        verbose_name = _("User")
-        verbose_name_plural = _("Users")
+        verbose_name = _("Пользователь")
+        verbose_name_plural = _("Пользователи")
         
     def __str__(self):
         return self.email
@@ -221,8 +221,8 @@ class Payments(models.Model):
     icon = models.ImageField(_("Иконка"), upload_to="payments", null=True, blank=True)
     
     class Meta:
-        verbose_name = "Payment"
-        verbose_name_plural = "Payments"
+        verbose_name = "Оплата"
+        verbose_name_plural = "Платежи"
         
     def __str__(self):
         return self.bank_name

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
 
-from .models import Currency
+from src.main.models import Currency
 from .services import get_isfavorite, get_isrequested
 
 

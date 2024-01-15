@@ -16,20 +16,3 @@ class Favorites(models.Model):
     def __str__(self):
         return self.user.email
 
-
-class Currency(models.Model):
-    CURRENCY_CHOICES = (
-        ("USD", "USD"),
-        ("EUR", "EUR")
-    )
-
-    currency = models.CharField(_("Валюта"), max_length=20, choices=CURRENCY_CHOICES, unique=True)
-    purchase = models.DecimalField(_("Покупка"), max_digits=10, decimal_places=2)
-    sell = models.DecimalField(_("Продажа"), max_digits=10, decimal_places=2)
-
-    def __str__(self) -> str:
-        return self.currency
-
-    class Meta:
-        verbose_name = _("Курс")
-        verbose_name_plural = _("Курсы")
