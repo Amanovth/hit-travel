@@ -10,6 +10,7 @@ from .services import permissions
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
+    save_on_top = True
     list_display = ("id", "email", "first_name", "last_name", "is_staff")
     list_display_links = ("id", "email")
     search_fields = (
@@ -68,7 +69,7 @@ class UserAdmin(UserAdmin):
             },
         ),
     ]
-    add_fieldsets = (
+    add_fieldsets = [
         (
             None,
             {
@@ -94,7 +95,7 @@ class UserAdmin(UserAdmin):
                 ),
             },
         ),
-    )
+    ]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
@@ -107,7 +108,8 @@ class UserAdmin(UserAdmin):
                 ]
 
         if request.user.is_superuser:
-            fieldsets.append(permissions)
+            if len(fieldsets) <= 4:
+                fieldsets.append(permissions)
         return fieldsets
 
 
@@ -124,6 +126,7 @@ class DocumentsInline(admin.StackedInline):
 
 @admin.register(RequestTour)
 class TourRequestAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = (
         "id",
         "first_name",

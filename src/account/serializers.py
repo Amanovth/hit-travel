@@ -193,7 +193,6 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
             "date_joined",
             "last_login",
             "photo",
-            "balance",
             "bonuses",
             "inn",
             "passport_id",
