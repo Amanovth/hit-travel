@@ -213,8 +213,11 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
             if bonuses.status_code != 200:
                 return None
+            
+            bcard_value = bonuses.json().get("user", [])[0].get("bcard_value", None)
+            return bcard_value
 
-            return "{:.2f}".format(bonuses.json()["user"][0]["bcard_value"])
+             
         return None
 
     def get_photo(self, obj):
@@ -252,7 +255,7 @@ class TravelerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Traveler
-        fields = ["first_name", "last_name", "dateofborn", "gender"]
+        fields = ["first_name", "last_name", "dateofborn", "gender", "inn", "passport_id", "date_of_issue", "issued_by", "validity", "country"]
 
 
 class DocumentsSerializer(serializers.ModelSerializer):
@@ -306,6 +309,8 @@ class TourRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             travelers_list = validated_data.pop("travelers")
+            with open('example.txt', 'w') as file:
+                file.write(f"travelers_list - {travelers_list}\n\n\n")
             instance = RequestTour.objects.create(**validated_data)
             for traveler in travelers_list:
                 instance.travelers.create(**traveler)
@@ -323,3 +328,7 @@ class FAQListSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
         fields = "__all__"
+
+
+class TourHistorySerializers():
+    pass

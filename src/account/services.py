@@ -204,7 +204,7 @@ def decrease_bonuses(bcard_id, bonuses, reason):
 def increase_bonuses(bcard_id, bonuses, reason):
     url = f"https://api.u-on.ru/{KEY}/bcard-bonus/create.json"
 
-    till_date = datetime.now() + timedelta(days=30)
+    till_date = datetime.now() + timedelta(days=365)
 
     data = {
         "bc_id": bcard_id,

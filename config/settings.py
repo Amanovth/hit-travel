@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "admin_extra_buttons",
     "drf_yasg",
     "ckeditor",
     "ckeditor_uploader",
@@ -129,7 +130,7 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    # "*",
+    # "http://localhost:3000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [

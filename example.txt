@@ -1,0 +1,9 @@
+travelers_list - [OrderedDict([('first_name', 'string'), ('last_name', 'string'), ('dateofborn', datetime.date(2024, 2, 13)), ('gender', 'Муж'), ('inn', 'string'), ('passport_id', 'string'), ('date_of_issue', datetime.date(2024, 2, 13)), ('issued_by', 'string'), ('validity', datetime.date(2024, 2, 13)), ('country', 'string')])]
+
+
+serializer.data - {'id': 703, 'first_name': 'Admin', 'last_name': 'Account For Developers', 'phone': '996501774428', 'email': 'alanwalker@gmail.com', 'gender': 'м', 'dateofborn': None, 'inn': None, 'tourid': '93283525786495', 'operatorlink': 'https://youtube.com', 'travelers': [OrderedDict([('first_name', 'string'), ('last_name', 'string'), ('dateofborn', '2024-02-13'), ('gender', 'Муж'), ('inn', 'string'), ('passport_id', 'string'), ('date_of_issue', '2024-02-13'), ('issued_by', 'string'), ('validity', '2024-02-13'), ('country', 'string')])], 'city': None, 'country': None, 'passport_id': None, 'bonuses': '1.00', 'price': '2', 'currency': 1, 'passport_front': None, 'passport_back': None, 'date_of_issue': None, 'issued_by': None, 'validity': None, 'documents': [], 'agreement': '/media/agreements/agreement_pdf_19835_r0rVTIe.pdf'}
+
+
+serializer.data - {'id': 704, 'first_name': 'beka', 'last_name': 'serkan', 'phone': '0990260795', 'email': 'bekaserkan@gmail.com', 'gender': 'м', 'dateofborn': None, 'inn': '546464', 'tourid': '93283373562191', 'operatorlink': 'https://b2b.fstravel.asia/search_tour?STATEINC=18498&TOWNFROMINC=764941&HOTELS=713016&CHECKIN_BEG=20240226&CHECKIN_END=20240226&NIGHTS_FROM=6&NIGHTS_TILL=6&ADULT=2&CHILD=0&DOLOAD=1', 'travelers': [], 'city': 'Бишкек', 'country': 'Кыргызстан', 'passport_id': 'test', 'bonuses': None, 'price': '1813', 'currency': 2, 'passport_front': None, 'passport_back': None, 'date_of_issue': '2023-11-08', 'issued_by': 'Test', 'validity': '2023-11-08', 'documents': [], 'agreement': '/media/agreements/agreement_pdf_19845.pdf'}
+
+

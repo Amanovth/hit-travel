@@ -6,7 +6,7 @@ from ckeditor.fields import RichTextField
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth.hashers import make_password
-
+import requests
 from ..base.services import get_path_upload_photo, validate_size_image
 from .services import add_tourist_on_user_creation, add_lead_on_creation
 from .managers import UserManager
@@ -117,8 +117,8 @@ class BonusHistory(models.Model):
 
 class RequestTour(models.Model):
     GENDER_CHOICES = (
-        ("м", "Муж"),
-        ("ж", "Жен")
+        ("Муж", "Муж"),
+        ("Жен", "Жен")
     )
     STATUS_CHOICES = (
         (1, "Новая заявка"),
@@ -205,7 +205,14 @@ class Traveler(models.Model):
     first_name = models.CharField(_("Имя"), max_length=100)
     last_name = models.CharField(_("Фамилия"), max_length=100)
     gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3, null=True, blank=True)
-        
+    inn = models.CharField(_("ИНН"), max_length=100, null=True, blank=True)
+    passport_id = models.CharField(_("ID пасспорта"), max_length=255, null=True, blank=True)
+    date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
+    issued_by = models.CharField(_("Орган выдачи"), null=True, blank=True)
+    validity = models.DateField(_("Срок действия"), null=True, blank=True)
+    # city = models.CharField(_("Город"), max_length=255, null=True, blank=True)
+    country = models.CharField(_("Страна"), max_length=255, null=True, blank=True)
+
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
@@ -238,5 +245,4 @@ class FAQ(models.Model):
     class Meta:
         verbose_name = _("FAQ")
         verbose_name_plural = _("FAQ")
-
 

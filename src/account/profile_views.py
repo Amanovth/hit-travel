@@ -4,7 +4,7 @@ import requests
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from .serializers import *
@@ -114,6 +114,7 @@ class MyTourAPIVIew(APIView):
                 continue
             try:
                 d = {}
+                d["id"] = tourrequest_id
                 # d["link"] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
                 d["link"] = f"http://hit-travel.org{i['agreement']}"
                 d["tourid"] = tourid
@@ -126,7 +127,52 @@ class MyTourAPIVIew(APIView):
                 continue
 
         return Response(response)
+        
+class MyTourDetailAPIVIew(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, pk):
+        authlogin = settings.AUTHLOGIN
+        authpass = settings.AUTHPASS
+        user = request.user
+
+        queryset = RequestTour.objects.filter(user=request.user, id=pk)
+        serializer = TourRequestSerializer(queryset, many=True)
+        response = []
+
+        for i in serializer.data:
+            tourid = i["tourid"]
+            tourrequest_id = i["id"]
+            status = RequestTour.objects.get(tourid=tourid, user=request.user)
+            detail = requests.get(
+                f"http://tourvisor.ru/xml/actualize.php?tourid={tourid}&request=0"
+                f"&format=json&authpass={authpass}&authlogin={authlogin}"
+            )
+
+            if detail.status_code != 200:
+                continue
+            try:
+                d = {}
+                d["first_name"] = i["first_name"]
+                d["last_name"] = i["last_name"]
+                d["gender"] = 'Мужчина' if i["gender"] == 'Муж' else 'Женщина'
+                d["phone"] = i["phone"]
+                d["email"] = i["email"]
+                d["country"] = i["country"]
+                d["passport_id"] = i["passport_id"]
+                # d["link"] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
+                d["link"] = f"http://hit-travel.org{i['agreement']}"
+                d["tourid"] = tourid
+                d["status"] = status.status
+                d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
+                d["tour"] = detail.json()["data"]["tour"]
+                d["documents"] = i["documents"]
+                response.append(d)
+            except KeyError:
+                continue
+
+        return Response(response)
+    
 
 class BonusHistoryAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]

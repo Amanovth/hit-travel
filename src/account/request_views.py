@@ -31,6 +31,8 @@ class TourRequestView(generics.CreateAPIView):
                 return Response({"response": False})
 
             serializer.save(user=request.user)
+            with open('example.txt', 'a') as file:
+                file.write(f"serializer.data - {serializer.data}\n\n\n")
 
             res = create_lead(serializer.data, user)
             if res:

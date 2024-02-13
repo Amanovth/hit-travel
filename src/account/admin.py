@@ -113,7 +113,7 @@ class UserAdmin(UserAdmin):
 class TravelersInline(admin.StackedInline):
     model = Traveler
     extra = 0
-    fields = ["first_name", "last_name"]
+    fields = ["first_name", "last_name", "gender", "inn", "passport_id", "country", "issued_by", "date_of_issue", "validity"]
 
 
 class DocumentsInline(admin.StackedInline):
@@ -233,3 +233,5 @@ class FAQAdmin(admin.ModelAdmin):
         "question",
     )
     list_display_links = list_display
+
+

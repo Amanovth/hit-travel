@@ -3,6 +3,7 @@ import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
+from .models import Countries
 
 from src.main.models import Currency
 from .services import get_isfavorite, get_isrequested
@@ -59,6 +60,7 @@ class SearchView(APIView):
             )
 
             response = requests.get(url)
+            
             if response.status_code != 200:
                 return Response({"response": False})
 
@@ -212,10 +214,17 @@ class FilterCountries(APIView):
 
         countries = countries.json()
 
-        for i in countries["lists"]["countries"]["country"]:
-            if i["name"] == "Киргизия":
-                i["name"] = "Кыргызстан"
-                break
+        db = Countries.objects.all()
+        for i1 in countries["lists"]["countries"]["country"]:
+            for i2 in db:
+                if i1['name'] == i2.name:
+                    if i2.img:
+                        i1["img"] = f'https://hit-travel.org{i2.img.url}'
+                    else:
+                        i1["img"] = None
+
+            if i1["name"] == "Киргизия":
+                i1["name"] = "Кыргызстан"
 
         return Response(countries)
 
