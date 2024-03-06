@@ -30,7 +30,7 @@ permissions = (
 def update_user(data, user):
     url = f"https://api.u-on.ru/{KEY}/user/update/{user.tourist_id}.json"
 
-    if data["gender"] == "Муж":
+    if data["gender"] == "м":
         u_sex = "m"
     else:
         u_sex = "f"

@@ -20,8 +20,21 @@ class SearchView(APIView):
         )
 
         for param, value in query_params.items():
-            search_url += f"&{param}={value}"
+            if param == 'directOnly' and value == 'true':
+                param = 'hideregular'
+                value = 1
+                search_url += f"&{param}={value}"
 
+            elif param == 'directOnly' and value == 'false':
+                a = 1
+            
+            else:
+                search_url += f"&{param}={value}"
+
+
+        # with open('example.txt', 'a') as file:
+        #     file.write(f"{search_url}\n\n")
+            
         requestid = requests.get(search_url)
 
         if requestid.status_code != 200:
@@ -46,9 +59,13 @@ class SearchView(APIView):
             pricefrom = int(query_params.get("pricefrom"))
             priceto = int(query_params.get("priceto"))
 
+            # hideregular = bool(query_params.get("hideregular"))
+
             mutable_query_params["pricefrom"] = pricefrom / usd_exchange
             mutable_query_params["priceto"] = priceto / usd_exchange
             mutable_query_params["currency"] = "1"
+
+            # mutable_query_params["hideregular"] = 1 if hideregular == False else None
 
             requestid = self.get_search_result(mutable_query_params)
 
@@ -56,11 +73,13 @@ class SearchView(APIView):
 
             url = (
                 f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
-                f"&authlogin={self.authlogin}&authpass={self.authpass}"
+                f"&authlogin={self.authlogin}&authpass={self.authpass}&onpage=999"
             )
 
-            response = requests.get(url)
             
+            response = requests.get(url)                
+            
+
             if response.status_code != 200:
                 return Response({"response": False})
 
@@ -99,7 +118,7 @@ class SearchView(APIView):
 
             url = (
                 f"http://tourvisor.ru/xml/result.php?format=json&requestid={requestid}"
-                f"&authlogin={self.authlogin}&authpass={self.authpass}"
+                f"&authlogin={self.authlogin}&authpass={self.authpass}&onpage=999"
             )
 
             response = requests.get(url)

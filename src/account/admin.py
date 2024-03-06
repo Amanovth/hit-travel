@@ -4,7 +4,6 @@ from django.contrib.auth.admin import UserAdmin
 from .models import *
 from .services import permissions
 
-
 @admin.register(User)
 class UserAdmin(UserAdmin):
     save_on_top = True
@@ -38,6 +37,7 @@ class UserAdmin(UserAdmin):
             {
                 "fields": (
                     "phone",
+                    "whatsapp",
                     "first_name",
                     "last_name",
                     "dateofborn",
@@ -113,7 +113,7 @@ class UserAdmin(UserAdmin):
 class TravelersInline(admin.StackedInline):
     model = Traveler
     extra = 0
-    fields = ["first_name", "last_name", "gender", "inn", "passport_id", "country", "issued_by", "date_of_issue", "validity"]
+    fields = ["first_name", "last_name", "dateofborn", "passport_id", "issued_by"]
 
 
 class DocumentsInline(admin.StackedInline):
@@ -148,6 +148,7 @@ class TourRequestAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "manager",
                     "status",
                     "surcharge",
                     "request_number",

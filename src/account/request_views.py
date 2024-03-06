@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-
+import json
 from .models import RequestTour
 from .serializers import TourRequestSerializer
 from .services import create_lead, decrease_bonuses
@@ -31,8 +31,9 @@ class TourRequestView(generics.CreateAPIView):
                 return Response({"response": False})
 
             serializer.save(user=request.user)
-            with open('example.txt', 'a') as file:
-                file.write(f"serializer.data - {serializer.data}\n\n\n")
+            
+            # with open('example.json', 'a') as file:
+            #     file.write(f"{json.dumps(serializer.data, indent=2)}\n\n\n")
 
             res = create_lead(serializer.data, user)
             if res:

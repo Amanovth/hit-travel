@@ -61,8 +61,8 @@ class BusTours(models.Model):
         return f"{self.title} {self.nights} ночей"
 
     class Meta:
-        verbose_name = _("Автобусный тур")
-        verbose_name_plural = _("Автобусные туры")
+        verbose_name = _("Авторский тур")
+        verbose_name_plural = _("Авторские туры")
 
 
 class TourProgram(models.Model):

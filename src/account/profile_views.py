@@ -97,7 +97,7 @@ class MyTourAPIVIew(APIView):
         authpass = settings.AUTHPASS
         user = request.user
 
-        queryset = RequestTour.objects.filter(user=request.user)
+        queryset = RequestTour.objects.filter(user=request.user).order_by('-id')
         serializer = TourRequestSerializer(queryset, many=True)
         response = []
 
@@ -153,13 +153,15 @@ class MyTourDetailAPIVIew(APIView):
                 continue
             try:
                 d = {}
+                d["id"] = tourrequest_id
                 d["first_name"] = i["first_name"]
                 d["last_name"] = i["last_name"]
-                d["gender"] = 'Мужчина' if i["gender"] == 'Муж' else 'Женщина'
+                d["gender"] = 'Мужчина' if i["gender"] == 'м' else 'Женщина'
                 d["phone"] = i["phone"]
                 d["email"] = i["email"]
                 d["country"] = i["country"]
                 d["passport_id"] = i["passport_id"]
+                d["bonus"] = i["bonuses"] if i["bonuses"] != None else 0
                 # d["link"] = f"https://hit-travel.org/profile/agreement-pdf/{tourrequest_id}"
                 d["link"] = f"http://hit-travel.org{i['agreement']}"
                 d["tourid"] = tourid
@@ -167,7 +169,16 @@ class MyTourDetailAPIVIew(APIView):
                 d["isfavorite"] = get_isfavorite(user=user, tourid=tourid)
                 d["tour"] = detail.json()["data"]["tour"]
                 d["documents"] = i["documents"]
-                response.append(d)
+                d["travelers"] = i["travelers"]
+                try:
+                    manager = User.objects.get(pk=i["manager"])
+                    d["manager"] = f"{manager.first_name} {manager.last_name}"
+                    d["manager_phone"] = f"{manager.phone}"
+                    d["manager_whatsapp"] = f"https://wa.me/{manager.whatsapp}"
+                    d["manager_photo"] = f"https://hit-travel.org{manager.photo.url}"
+                    response.append(d)
+                except:
+                    response.append(d)
             except KeyError:
                 continue
 

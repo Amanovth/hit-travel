@@ -40,6 +40,7 @@ class User(AbstractUser):
     surname = models.CharField(_("Отчество"), null=True, blank=True, max_length=255)
     is_verified = models.BooleanField(_("Verification"), default=False)
     phone = models.CharField(_("Телефон"), max_length=100)
+    whatsapp = models.CharField(_("What's App номер"), help_text='без (+, 0)      Для менеджеров', max_length=230, blank=True, null=True)
     password_readable = models.CharField(null=True, blank=True, max_length=255)
     verification_code = models.IntegerField(_("Verification code"), null=True, blank=True)
     verification_code_time = models.DateTimeField(_("Verification code created time"), null=True, blank=True)
@@ -117,8 +118,8 @@ class BonusHistory(models.Model):
 
 class RequestTour(models.Model):
     GENDER_CHOICES = (
-        ("Муж", "Муж"),
-        ("Жен", "Жен")
+        ("м", "Муж"),
+        ("ж", "Жен")
     )
     STATUS_CHOICES = (
         (1, "Новая заявка"),
@@ -126,10 +127,10 @@ class RequestTour(models.Model):
         (3, "Тур куплен"),
         (4, "Отклонено"),
     )
-
     user = models.ForeignKey(User, verbose_name=_("Клиент"), on_delete=models.CASCADE, null=True, blank=True)
     status = models.IntegerField(_("Статус"), choices=STATUS_CHOICES, default=2)
     request_number = models.IntegerField(_("Номер заявки"), null=True, blank=True)
+    manager = models.ForeignKey(User, verbose_name='Менеджер', on_delete=models.CASCADE, limit_choices_to={"groups__name": 'Managers'}, null=True, blank=True, related_name='tour_manager')
     
     first_name = models.CharField(_("Имя"), max_length=100, null=True, blank=True)
     last_name = models.CharField(_("Фамилия"), max_length=100, null=True, blank=True)
@@ -202,16 +203,16 @@ class Traveler(models.Model):
     
     main = models.ForeignKey(RequestTour, on_delete=models.CASCADE, related_name="travelers")
     dateofborn = models.DateField(_("Дата рождения"), null=True, blank=True)
-    first_name = models.CharField(_("Имя"), max_length=100)
-    last_name = models.CharField(_("Фамилия"), max_length=100)
-    gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3, null=True, blank=True)
-    inn = models.CharField(_("ИНН"), max_length=100, null=True, blank=True)
-    passport_id = models.CharField(_("ID пасспорта"), max_length=255, null=True, blank=True)
-    date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
-    issued_by = models.CharField(_("Орган выдачи"), null=True, blank=True)
-    validity = models.DateField(_("Срок действия"), null=True, blank=True)
+    first_name = models.CharField(_("Имя по загранпаспорту"), max_length=100)
+    last_name = models.CharField(_("Фамилия по загранпаспорту"), max_length=100)
+    # gender = models.CharField(_("Пол"), choices=GENDER_CHOICES, max_length=3, null=True, blank=True)
+    # inn = models.CharField(_("Серия и номер"), max_length=100, null=True, blank=True)
+    passport_id = models.CharField(_("Серия и номер з/п"), max_length=255, null=True, blank=True)
+    # date_of_issue = models.DateField(_("Дата выдачи"), null=True, blank=True)
+    issued_by = models.CharField(_("Орган, выдачи з/п"), null=True, blank=True)
+    # validity = models.DateField(_("Срок действия"), null=True, blank=True)
     # city = models.CharField(_("Город"), max_length=255, null=True, blank=True)
-    country = models.CharField(_("Страна"), max_length=255, null=True, blank=True)
+    # country = models.CharField(_("Страна"), max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"

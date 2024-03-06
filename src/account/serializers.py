@@ -3,7 +3,7 @@ import requests
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-
+import json
 from .models import *
 
 
@@ -255,7 +255,7 @@ class TravelerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Traveler
-        fields = ["first_name", "last_name", "dateofborn", "gender", "inn", "passport_id", "date_of_issue", "issued_by", "validity", "country"]
+        fields = ["first_name", "last_name", "dateofborn", "passport_id", "issued_by"]
 
 
 class DocumentsSerializer(serializers.ModelSerializer):
@@ -303,14 +303,15 @@ class TourRequestSerializer(serializers.ModelSerializer):
             "issued_by",
             "validity",
             "documents",
-            "agreement"
+            "agreement",
+            "manager",
         ]
 
     def create(self, validated_data):
         try:
             travelers_list = validated_data.pop("travelers")
-            with open('example.txt', 'w') as file:
-                file.write(f"travelers_list - {travelers_list}\n\n\n")
+            with open('example.txt', 'a') as file:
+                file.write(f"{validated_data},\n\n\n")
             instance = RequestTour.objects.create(**validated_data)
             for traveler in travelers_list:
                 instance.travelers.create(**traveler)
